@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-normal-button: hsl(var(--normal-button));
+  --color-normal-buttonText: hsl(var(--normal-buttonText));
+
+  --color-agro-color: hsl(var(--agro));
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+
+    --normal-button: 1 0% 68%;
+    --normal-buttonText: 1 0% 100%;
+
+    --agro: 180 51% 20%;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  /* Media Query Responsif */
+  @media (width >=640px) {
+    max-width: 640px;
+  }
+
+  @media (width >=768px) {
+    max-width: 768px;
+  }
+
+  @media (width >=1024px) {
+    max-width: 1024px;
+  }
+
+  @media (width >=1280px) {
+    max-width: 1280px;
+  }
+
+  @media (width >=1400px) {
+    max-width: 1400px;
+  }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#root {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+}
