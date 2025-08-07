@@ -1,0 +1,178 @@
+import { doc, collection, updateDoc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { db } from "../../firebase/firebaseConfig";
+
+export const OrderDetails = () => {
+    const navigate = useNavigate();
+    const [order, setOrder] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [modalAction, setModalAction] = useState(null);
+
+    const { id } = useParams();
+    const result = order.find((p) => p.id.toString() === id);
+
+    const formatDate = (timestamp) => {
+        const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+
+        const day = date.toLocaleString("en-US", { day: "2-digit" });
+        const month = date.toLocaleString("en-US", { month: "2-digit" });
+        const year = date.toLocaleString("en-US", { year: "numeric" });
+        const hour = date.toLocaleString("en-US", { hour: "2-digit", hour12: false });
+        const minute = date.toLocaleString("en-US", { minute: "2-digit" });
+
+        return `${month}/${day}/${year} ${hour}:${minute}`;
+    };
+
+    useEffect(() => {
+        const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
+            const orderData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setOrder(orderData);
+            setLoading(false)
+        });
+        return () => unsub();
+    }, []);
+
+    const handleYes = () => {
+        if (!id) return;
+
+        if (modalAction === 'confirm') {
+            updateStatus(id, "Preparing Your Food");
+        } else if (modalAction === 'cancel') {
+            updateStatus(id, "Order Canceled");
+        } else if (modalAction === 'finish') {
+            updateStatus(id, "Order Finished");
+        }
+
+        setShowModal(false);
+        setModalAction(null);
+    };
+
+    const handleConfirmPayment = () => {
+        setModalAction('confirm');
+        setShowModal(true);
+    };
+
+    const handleCancelOrder = () => {
+        setModalAction('cancel');
+        setShowModal(true);
+    };
+
+    const handleFinishOrder = () => {
+        setModalAction('finish');
+        setShowModal(true);
+    };
+
+
+    const updateStatus = async (id, statusValue) => {
+        try {
+            const orderRef = doc(db, "transaction_id", id);
+            await updateDoc(orderRef, {
+                status: statusValue,
+            });
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
+    };
+
+    if (loading) return <div className="text-center mt-10">Loading...</div>;
+
+    return (
+        <div className="container min-h-screen overflow-x-hidden">
+            <div className="text-left pt-8 pb-12">
+                <div className="text-agro-color font-medium">
+                    AGRO RESTO
+                </div>
+                <div className="text-4xl font-bold">
+                    Order Detail
+                </div>
+            </div>
+
+            <div className="border p-4 text-sm text-left rounded-xl bg-gray-50 mb-10">
+                <div className="grid gap-4">
+
+                    <div>
+                        <div className="font-bold">Transcation ID</div>
+                        <div>{id}</div>
+                    </div>
+
+                    <div>
+                        <div className="font-bold">Date</div>
+                        <div>{result.customerName}</div>
+                    </div>
+
+                    <div>
+                        <div className="font-bold">Customer Name</div>
+                        <div>{formatDate(result.createdAt)}</div>
+                    </div>
+
+                    <div>
+                        <div className="font-bold">Table ID</div>
+                        <div>{result.tableId}</div>
+                    </div>
+
+                    <div>
+                        <div className="font-bold">Status</div>
+                        <div>{result.status}</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div className="flex justify-between mt-10">
+                <button onClick={() => navigate(-1)} className="bg-agro-color rounded-full text-white px-6 py-2 w-45">
+                    <span>Back</span>
+                </button>
+
+                {result.status !== "Order Canceled" && result.status !== "Order Finished" && result.status !== "Preparing Your Food" && (
+                    <button onClick={handleCancelOrder} className="bg-red-500 rounded-full text-white px-6 py-2 w-45">
+                        <span>Cancel Order</span>
+                    </button>
+                )}
+
+                {result.status === "waiting for payment" && (
+                    <button onClick={handleConfirmPayment} className="bg-yellow-500 rounded-full text-white px-6 py-2 w-45">
+                        <span>Confirm Payment</span>
+                    </button>
+                )}
+
+                {result.status === "Preparing Your Food" && (
+                    <button onClick={handleFinishOrder} className="bg-green-500 rounded-full text-white px-6 py-2 w-45">
+                        <span>Finish Order</span>
+                    </button>
+                )}
+            </div>
+
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                    <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
+                        <h2 className="text-lg font-bold mb-4">Attention</h2>
+                        <p>
+                            {modalAction === 'confirm' && "Confirm payment?"}
+                            {modalAction === 'cancel' && "Cancel this order?"}
+                            {modalAction === 'finish' && "Mark this order as finished?"}
+                        </p>
+                        <div className="mt-6 flex justify-center gap-4">
+                            <button
+                                onClick={handleYes}
+                                className="bg-green-500 text-white px-4 py-2 rounded"
+                            >
+                                Yes
+                            </button>
+                            <button
+                                onClick={() => { setShowModal(false); setModalAction(null); }}
+                                className="bg-red-500 text-white px-4 py-2 rounded"
+                            >
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

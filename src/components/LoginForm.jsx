@@ -2,9 +2,16 @@ import { useState } from "react";
 import { auth } from "../../firebase/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 export const LoginForm = () => {
     const navigate = useNavigate();
+
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword((prev) => !prev);
+    };
 
     const [formData, setFormData] = useState({
         email: "",
@@ -23,16 +30,16 @@ export const LoginForm = () => {
         setError(null);
 
         if (formData.email && formData.password) {
-            try{
+            try {
                 const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
                 const user = userCredential.user;
                 console.log("signed in: ", user);
                 navigate("/tools");
-            } catch (error){
+            } catch (error) {
                 console.error("Login error: ", error);
                 setError(error.message);
             }
-        } else{
+        } else {
             setError("Please enter email and password")
         }
     };
@@ -52,27 +59,39 @@ export const LoginForm = () => {
                 </div>
 
                 <form className="text-white flex flex-col gap-2 w-full max-w-sm mx-auto items-center">
-                    <label htmlFor="email" className="text-left font-medium w-full">email</label>
+                    <label htmlFor="email" className="text-left font-medium w-full">Email</label>
                     <input
                         type="text"
                         id="email"
                         name="email"
                         required
                         className="w-full p-1 rounded bg-white text-black"
+                        placeholder="Please enter your Email"
                         value={formData.email}
                         onChange={handleChange}
                     />
 
-                    <label className="text-left font-medium w-full">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        required
-                        className="w-full p-1 rounded bg-white text-black"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
+                    <label htmlFor="password" className="text-left font-medium w-full">Password</label>
+                    <div className="relative w-full">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            id="password"
+                            name="password"
+                            required
+                            className="w-full p-1 rounded bg-white text-black"
+                            placeholder="Please enter your Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
+                        <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
+                            tabIndex={-1}
+                        >
+                            {showPassword ? <Eye/> : <EyeOff/>}
+                        </button>
+                    </div>
 
                     <button
                         type="submit"
