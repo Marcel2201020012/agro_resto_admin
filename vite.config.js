@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: process.env.VITE_BASE_PATH || "/Agro_Resto_Client",
+  base: process.env.VITE_BASE_PATH || "/agro_resto_admin",
   server: {
     historyApiFallback: true
   }
