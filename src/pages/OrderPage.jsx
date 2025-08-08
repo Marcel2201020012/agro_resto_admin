@@ -19,9 +19,29 @@ export const OrderPage = () => {
     const sortedOrders = [...orders].sort((a, b) => {
         const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
         if (statusComparison !== 0) return statusComparison;
-
-        return new Date(b.createdAt) - new Date(a.createdAt);
     });
+
+    const getOrdersByStatus = (status) => {
+        const orders = sortedOrders
+            .filter(order => order.status === status)
+            .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+
+        let heightClass = "";
+        if (orders.length > 0 && orders.length < 3) {
+            heightClass = "h-32";
+        } else if (orders.length < 5) {
+            heightClass = "h-64";
+        } else if (orders.length >= 5) {
+            heightClass = "h-96";
+        }
+
+        return { orders, heightClass };
+    };
+
+    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment");
+    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Your Food");
+    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
+    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
 
     useEffect(() => {
         const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
@@ -49,19 +69,79 @@ export const OrderPage = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 h-96 overflow-y-scroll scrollbar-hide p-4">
-                {sortedOrders.map((order) => (
-                    <OrderBox
-                        key={order.id}
-                        id={order.id}
-                        date={order.createdAt}
-                        status={order.status}
-                    />
-                ))}
-            </div>
+            {waitingOrders.length > 0 && (
+                <>
+                    <div className="text-left font-medium text-orange-700">
+                        Waiting For Payment
+                    </div>
+                    <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${waitingHeight}`}>
+                        {waitingOrders.map(order => (
+                            <OrderBox
+                                key={order.id}
+                                id={order.id}
+                                date={order.createdAt}
+                                status={order.status}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
 
+            {preparingOrders.length > 0 && (
+                <>
+                    <div className="text-left font-medium text-yellow-700">
+                        Preparing Your Food
+                    </div>
+                    <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${preparingHeight}`}>
+                        {preparingOrders.map(order => (
+                            <OrderBox
+                                key={order.id}
+                                id={order.id}
+                                date={order.createdAt}
+                                status={order.status}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
 
-            <div className="absolute bottom-12 text-left">
+            {finishedOrders.length > 0 && (
+                <>
+                    <div className="text-left font-medium text-gray-700">
+                        Order Finished
+                    </div>
+                    <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${finishedHeight}`}>
+                        {finishedOrders.map(order => (
+                            <OrderBox
+                                key={order.id}
+                                id={order.id}
+                                date={order.createdAt}
+                                status={order.status}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {canceledOrders.length > 0 && (
+                <>
+                    <div className="text-left font-medium text-red-700">
+                        Order Canceled
+                    </div>
+                    <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${canceledHeight}`}>
+                        {canceledOrders.map(order => (
+                            <OrderBox
+                                key={order.id}
+                                id={order.id}
+                                date={order.createdAt}
+                                status={order.status}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+
+            <div className="mt-10 mb-8 text-left">
                 <button onClick={() => navigate(-1)} className="bg-agro-color rounded-full p-2 w-24 text-white">
                     Back
                 </button>

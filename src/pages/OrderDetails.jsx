@@ -150,7 +150,7 @@ export const OrderDetails = () => {
                 </div>
             </div>
 
-            <div className="flex justify-between mt-10">
+            <div className="flex justify-between mt-10 mb-8">
                 <button onClick={() => navigate(-1)} className="bg-agro-color rounded-full text-white px-6 py-2 w-45">
                     <span>Back</span>
                 </button>
