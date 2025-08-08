@@ -25,7 +25,7 @@ export const OrderBox = ({ id, date, status }) => {
                     {formatDate(date)}
                 </div>
                 <div
-                    className={`text-left ${status === 'waiting for payment'
+                    className={`text-left ${status === 'Waiting For Payment'
                         ? 'text-orange-700'
                         : status === 'Preparing Your Food'
                             ? 'text-yellow-700'

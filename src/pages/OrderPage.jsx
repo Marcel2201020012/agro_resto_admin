@@ -10,7 +10,7 @@ export const OrderPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const STATUS_PRIORITY = {
-        'waiting for payment': 1,
+        'Waiting For Payment': 1,
         'Preparing Your Food': 2,
         'Order Canceled': 3,
         'Order Finished': 4

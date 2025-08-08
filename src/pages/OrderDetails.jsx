@@ -67,7 +67,6 @@ export const OrderDetails = () => {
         setShowModal(true);
     };
 
-
     const updateStatus = async (id, statusValue) => {
         try {
             const orderRef = doc(db, "transaction_id", id);
@@ -101,12 +100,12 @@ export const OrderDetails = () => {
                     </div>
 
                     <div>
-                        <div className="font-bold">Date</div>
+                        <div className="font-bold">Customer Name</div>
                         <div>{result.customerName}</div>
                     </div>
 
                     <div>
-                        <div className="font-bold">Customer Name</div>
+                        <div className="font-bold">Date</div>
                         <div>{formatDate(result.createdAt)}</div>
                     </div>
 
@@ -123,6 +122,34 @@ export const OrderDetails = () => {
                 </div>
             </div>
 
+            <div className="border p-4 rounded-xl bg-gray-50">
+                <div className="space-y-2">
+                    {Object.values(result.orderDetails).map((item, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                            <div className="text-left">
+                                <span>{item.jumlah}x</span>{" "}
+                                <span>{item.name}</span>
+                            </div>
+                            <div className="text-right font-semibold">
+                                Rp{item.price}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex justify-between mt-4 border-t pt-2">
+                    <p className="font-semibold">Total</p>
+                    <p className="text-green-700 font-semibold">
+                        Rp{
+                            Object.values(result.orderDetails).reduce(
+                                (sum, item) => sum + item.price * item.jumlah,
+                                0
+                            )
+                        }
+                    </p>
+                </div>
+            </div>
+
             <div className="flex justify-between mt-10">
                 <button onClick={() => navigate(-1)} className="bg-agro-color rounded-full text-white px-6 py-2 w-45">
                     <span>Back</span>
@@ -134,7 +161,7 @@ export const OrderDetails = () => {
                     </button>
                 )}
 
-                {result.status === "waiting for payment" && (
+                {result.status === "Waiting For Payment" && (
                     <button onClick={handleConfirmPayment} className="bg-yellow-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Confirm Payment</span>
                     </button>
