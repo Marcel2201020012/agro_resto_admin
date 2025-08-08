@@ -10,8 +10,8 @@ export const OrderPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const STATUS_PRIORITY = {
-        'Waiting For Payment': 1,
-        'Preparing Your Food': 2,
+        'Waiting For Payment On Cashier': 1,
+        'Preparing Food': 2,
         'Order Canceled': 3,
         'Order Finished': 4
     };
@@ -38,8 +38,8 @@ export const OrderPage = () => {
         return { orders, heightClass };
     };
 
-    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment");
-    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Your Food");
+    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
+    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
     const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
     const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
 
@@ -72,7 +72,7 @@ export const OrderPage = () => {
             {waitingOrders.length > 0 && (
                 <>
                     <div className="text-left font-medium text-orange-700">
-                        Waiting For Payment
+                        Waiting For Payment On Cashier
                     </div>
                     <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${waitingHeight}`}>
                         {waitingOrders.map(order => (
@@ -90,7 +90,7 @@ export const OrderPage = () => {
             {preparingOrders.length > 0 && (
                 <>
                     <div className="text-left font-medium text-yellow-700">
-                        Preparing Your Food
+                        Preparing Food
                     </div>
                     <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${preparingHeight}`}>
                         {preparingOrders.map(order => (

@@ -41,7 +41,7 @@ export const OrderDetails = () => {
         if (!id) return;
 
         if (modalAction === 'confirm') {
-            updateStatus(id, "Preparing Your Food");
+            updateStatus(id, "Preparing Food");
         } else if (modalAction === 'cancel') {
             updateStatus(id, "Order Canceled");
         } else if (modalAction === 'finish') {
@@ -155,19 +155,19 @@ export const OrderDetails = () => {
                     <span>Back</span>
                 </button>
 
-                {result.status !== "Order Canceled" && result.status !== "Order Finished" && result.status !== "Preparing Your Food" && (
+                {result.status !== "Order Canceled" && result.status !== "Order Finished" && result.status !== "Preparing Food" && (
                     <button onClick={handleCancelOrder} className="bg-red-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Cancel Order</span>
                     </button>
                 )}
 
-                {result.status === "Waiting For Payment" && (
+                {result.status === "Waiting For Payment On Cashier" && (
                     <button onClick={handleConfirmPayment} className="bg-yellow-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Confirm Payment</span>
                     </button>
                 )}
 
-                {result.status === "Preparing Your Food" && (
+                {result.status === "Preparing Food" && (
                     <button onClick={handleFinishOrder} className="bg-green-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Finish Order</span>
                     </button>
