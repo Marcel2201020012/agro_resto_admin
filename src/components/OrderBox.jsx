@@ -6,11 +6,13 @@ export const OrderBox = ({ id, date, status }) => {
     const formatDate = (timestamp) => {
         const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
 
-        const day = date.toLocaleString("en-US", { day: "2-digit" });
-        const month = date.toLocaleString("en-US", { month: "2-digit" });
-        const year = date.toLocaleString("en-US", { year: "numeric" });
-        const hour = date.toLocaleString("en-US", { hour: "2-digit", hour12: false });
-        const minute = date.toLocaleString("en-US", { minute: "2-digit" });
+        const pad = (num) => String(num).padStart(2, "0");
+
+        const day = pad(date.getDate());
+        const month = pad(date.getMonth() + 1);
+        const year = date.getFullYear();
+        const hour = pad(date.getHours());
+        const minute = pad(date.getMinutes());
 
         return `${month}/${day}/${year} ${hour}:${minute}`;
     };
