@@ -115,6 +115,11 @@ export const OrderDetails = () => {
                     </div>
 
                     <div>
+                        <div className="font-bold">Payment Methode</div>
+                        <div>{result.payment}</div>
+                    </div>
+
+                    <div>
                         <div className="font-bold">Status</div>
                         <div>{result.status}</div>
                     </div>
