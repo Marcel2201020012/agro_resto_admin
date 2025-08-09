@@ -8,10 +8,15 @@ import { OrderDetails } from "./pages/OrderDetails";
 
 import RequireAuth from "../hooks/RequireAuth";
 
+import OrderListener from "./components/OrderListener";
+import { ToastContainer } from "react-toastify";
+
 function App() {
   return (
     <>
       <BrowserRouter>
+        <OrderListener />
+        <ToastContainer position="top-right" closeButton={false}/>
         <Routes>
           <Route index element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -20,10 +25,10 @@ function App() {
               <ToolsPage />
             </RequireAuth>
           } />
-          <Route path="/order" element={<OrderPage/>}/>
-          <Route path="/orderDetail/:id" element={<OrderDetails/>}/>
-          <Route path="/sales" element={<SalesPage/>}/>
-          <Route path="/edit" element={<EditMenuPage/>}/>
+          <Route path="/order" element={<OrderPage />} />
+          <Route path="/orderDetail/:id" element={<OrderDetails />} />
+          <Route path="/sales" element={<SalesPage />} />
+          <Route path="/edit" element={<EditMenuPage />} />
         </Routes>
       </BrowserRouter>
     </>
