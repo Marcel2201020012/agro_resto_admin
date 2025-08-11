@@ -56,14 +56,15 @@ export const MenuDetailsList = () => {
     };
 
     const validateCnName = () => {
-        const value = foodName.trim();
+        const value = cnName.trim().normalize('NFKC').replace(/\u3000/g, ' ');
 
         if (value.length === 0) {
             setCnNameError("Please enter the Chinese name.");
             return false;
         }
 
-        const onlyChineseRegex = /^[\u4e00-\u9fff0-9·\s]+$/;
+        const onlyChineseRegex = /^[\p{Script=Han}0-9·\s]+$/u;
+
         if (!onlyChineseRegex.test(value)) {
             setCnNameError("Only Chinese characters, numbers, and spaces are allowed.");
             return false;
@@ -72,6 +73,7 @@ export const MenuDetailsList = () => {
         setCnNameError("");
         return true;
     };
+
 
     const validateFoodPrice = () => {
         if (foodPrice.trim().length < 1) {
@@ -103,12 +105,13 @@ export const MenuDetailsList = () => {
 
     const saveMenu = async (e) => {
         e.preventDefault();
-        setIsSaving(true);
 
         if (!validateFoodName() || !validateCnName || !validateFoodPrice() || !validateFoodImg()) {
             setIsSaving(false);
             return;
         }
+
+        setIsSaving(true);
 
         const menu = {
             name: foodName,

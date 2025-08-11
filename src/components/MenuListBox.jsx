@@ -35,7 +35,7 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         const updatedValues = {
             image: tempImg.trim() === "" ? originalValues.img : tempImg,
             name: tempName.trim() === "" ? originalValues.name : tempName,
-            name: tempCn.trim() === "" ? originalValues.cn : tempCn,
+            cn: tempCn.trim() === "" ? originalValues.cn : tempCn,
             price: tempPrice.trim() === "" ? originalValues.price : tempPrice,
         };
 
