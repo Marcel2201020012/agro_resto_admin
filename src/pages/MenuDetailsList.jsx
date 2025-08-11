@@ -13,6 +13,9 @@ export const MenuDetailsList = () => {
     const [foodName, setFoodName] = useState("");
     const [foodNameError, setFoodNameError] = useState("");
 
+    const [cnName, setCnName] = useState("");
+    const [cnNameError, setCnNameError] = useState("");
+
     const [foodPrice, setFoodPrice] = useState("");
     const [foodPriceError, setFoodPriceError] = useState("");
 
@@ -41,7 +44,6 @@ export const MenuDetailsList = () => {
             .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
     };
 
-
     const orders = getOrderByCategory(category);
 
     const validateFoodName = () => {
@@ -50,6 +52,30 @@ export const MenuDetailsList = () => {
             return false;
         }
         setFoodNameError("");
+        return true;
+    };
+
+    const validateCnName = () => {
+        const value = foodName.trim();
+
+        if (value.length === 0) {
+            setCnNameError("Please enter the Chinese name.");
+            return false;
+        }
+
+        const chineseCharRegex = /[\u4e00-\u9fff]/;
+        if (!chineseCharRegex.test(value)) {
+            setCnNameError("Name must contain Chinese characters.");
+            return false;
+        }
+
+        const onlyChineseRegex = /^[\u4e00-\u9fff·\s]+$/;
+        if (!onlyChineseRegex.test(value)) {
+            setCnNameError("Only Chinese characters are allowed.");
+            return false;
+        }
+
+        setCnNameError("");
         return true;
     };
 
@@ -92,6 +118,7 @@ export const MenuDetailsList = () => {
 
         const menu = {
             name: foodName,
+            cn: cnName,
             image: foodImg,
             price: foodPrice,
             category: category,
@@ -147,6 +174,21 @@ export const MenuDetailsList = () => {
                             />
                             {foodNameError && (
                                 <p className="text-red-500 mt-1 text-sm">{foodNameError}</p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Chinese Name</label>
+                            <input
+                                className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${cnNameError ? "border-red-500" : ""}`}
+                                type="text"
+                                placeholder="Enter food name"
+                                value={cnName}
+                                onChange={e => setCnName(e.target.value)}
+                                onBlur={validateCnName}
+                            />
+                            {cnNameError && (
+                                <p className="text-red-500 mt-1 text-sm">{cnNameError}</p>
                             )}
                         </div>
 
