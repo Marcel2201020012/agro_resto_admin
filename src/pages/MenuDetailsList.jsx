@@ -63,12 +63,6 @@ export const MenuDetailsList = () => {
             return false;
         }
 
-        const chineseCharRegex = /[\u4e00-\u9fff]/;
-        if (!chineseCharRegex.test(value)) {
-            setCnNameError("Name must contain Chinese characters.");
-            return false;
-        }
-
         const onlyChineseRegex = /^[\u4e00-\u9fff0-9·\s]+$/;
         if (!onlyChineseRegex.test(value)) {
             setCnNameError("Only Chinese characters, numbers, and spaces are allowed.");
@@ -111,7 +105,7 @@ export const MenuDetailsList = () => {
         e.preventDefault();
         setIsSaving(true);
 
-        if (!validateFoodName() || !validateFoodPrice() || !validateFoodImg()) {
+        if (!validateFoodName() || !validateCnName || !validateFoodPrice() || !validateFoodImg()) {
             setIsSaving(false);
             return;
         }
@@ -183,7 +177,7 @@ export const MenuDetailsList = () => {
                             <input
                                 className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${cnNameError ? "border-red-500" : ""}`}
                                 type="text"
-                                placeholder="Enter food name"
+                                placeholder="Enter chinese name"
                                 value={cnName}
                                 onChange={e => setCnName(e.target.value)}
                                 onBlur={validateCnName}
