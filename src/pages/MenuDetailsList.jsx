@@ -246,6 +246,7 @@ export const MenuDetailsList = () => {
                             id={order.id}
                             img={order.image}
                             name={order.name}
+                            cn={order.cn}
                             price={order.price}
                         />
                     ))

@@ -3,23 +3,22 @@ import { useState } from "react";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
-export const MenuListBox = ({ id, img, name, price }) => {
-    const originalValues = { img, name, price };
+export const MenuListBox = ({ id, img, name, cn, price }) => {
+    const originalValues = { img, name, cn, price };
 
-    // Each field has its own state
     const [tempImg, setTempImg] = useState(img);
     const [tempName, setTempName] = useState(name);
+    const [tempCn, setTempCn] = useState(cn);
     const [tempPrice, setTempPrice] = useState(price);
 
-    // Edit mode
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
     const handleEditToggle = () => {
         if (!isEditing) {
-            // Going into edit mode → clear fields to show placeholders
             setTempImg("");
             setTempName("");
+            setTempCn("");
             setTempPrice("");
         }
         setIsEditing(!isEditing);
@@ -28,6 +27,7 @@ export const MenuListBox = ({ id, img, name, price }) => {
     const handleBlur = (field) => {
         if (field === "img" && !tempImg) setTempImg(originalValues.img);
         if (field === "name" && !tempName) setTempName(originalValues.name);
+        if (field === "chinese" && !tempCn) setTempName(originalValues.cn);
         if (field === "price" && !tempPrice) setTempPrice(originalValues.price);
     };
 
@@ -35,19 +35,20 @@ export const MenuListBox = ({ id, img, name, price }) => {
         const updatedValues = {
             image: tempImg.trim() === "" ? originalValues.img : tempImg,
             name: tempName.trim() === "" ? originalValues.name : tempName,
+            name: tempCn.trim() === "" ? originalValues.cn : tempCn,
             price: tempPrice.trim() === "" ? originalValues.price : tempPrice,
         };
 
         await updateDoc(doc(db, "menu_makanan", id), updatedValues);
 
-        // Update original values so next edit uses fresh data
         originalValues.img = updatedValues.image;
         originalValues.name = updatedValues.name;
+        originalValues.cn = updatedValues.cn;
         originalValues.price = updatedValues.price;
 
-        // Update state with final values
         setTempImg(updatedValues.image);
         setTempName(updatedValues.name);
+        setTempCn(updatedValues.cn);
         setTempPrice(updatedValues.price);
 
         setIsEditing(false);
@@ -62,14 +63,12 @@ export const MenuListBox = ({ id, img, name, price }) => {
     return (
         <div className="bg-white border rounded-2xl px-6 py-4 shadow-md w-3/4">
             <div className="flex gap-8 items-center">
-                {/* Food image */}
                 <img
                     src={tempImg || originalValues.img}
                     alt="menu_icon"
                     className="h-32 w-32 object-cover rounded-lg"
                 />
 
-                {/* Inputs */}
                 <div className="flex flex-col flex-1 gap-3">
                     <input
                         className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
@@ -91,6 +90,16 @@ export const MenuListBox = ({ id, img, name, price }) => {
                         onBlur={() => handleBlur("name")}
                         readOnly={!isEditing}
                     />
+                     <input
+                        className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                            }`}
+                        type="text"
+                        value={tempCn}
+                        placeholder="Input chinese name"
+                        onChange={(e) => setTempCn(e.target.value)}
+                        onBlur={() => handleBlur("chinese")}
+                        readOnly={!isEditing}
+                    />
                     <input
                         className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
                             }`}
@@ -103,7 +112,6 @@ export const MenuListBox = ({ id, img, name, price }) => {
                     />
                 </div>
 
-                {/* Buttons */}
                 <div className="flex flex-col gap-2">
                     {isEditing ? (
                         <button
