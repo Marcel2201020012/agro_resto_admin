@@ -10,12 +10,15 @@ import RequireAuth from "../hooks/RequireAuth";
 
 import OrderListener from "./components/OrderListener";
 import { ToastContainer } from "react-toastify";
+import { useAuth } from "../hooks/useAuth";
 
 function App() {
+  const {user} = useAuth();
+
   return (
     <>
       <BrowserRouter>
-        <OrderListener />
+        {user && <OrderListener />}
         <ToastContainer position="top-right" closeButton={false}/>
         <Routes>
           <Route index element={<LoginPage />} />
