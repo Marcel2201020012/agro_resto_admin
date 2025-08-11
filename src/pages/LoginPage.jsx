@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 
+import bg from "../assets/bg/bg_1.png"
+
 export const LoginPage = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -24,7 +26,7 @@ export const LoginPage = () => {
 
     return (
         <div className="min-h-screen overflow-x-hidden overflow-y-hidden m-16">
-            <Background />
+            <Background bg={bg}/>
 
             <main>
                 <LoginForm />

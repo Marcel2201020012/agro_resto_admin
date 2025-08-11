@@ -10,7 +10,7 @@ export default function RequireAuth({ children }){
   }
 
   if (!user){
-    navigate("/logn");
+    navigate("/login");
     return null;
   }
 

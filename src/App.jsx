@@ -5,6 +5,7 @@ import { OrderPage } from "./pages/OrderPage";
 import { SalesPage } from "./pages/SalesPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
 import { OrderDetails } from "./pages/OrderDetails";
+import { MenuDetailsList } from "./pages/MenuDetailsList";
 
 import RequireAuth from "../hooks/RequireAuth";
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/orderDetail/:id" element={<OrderDetails />} />
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/edit" element={<EditMenuPage />} />
+          <Route path="/editMenu" element={<MenuDetailsList/>} />
         </Routes>
       </BrowserRouter>
     </>
