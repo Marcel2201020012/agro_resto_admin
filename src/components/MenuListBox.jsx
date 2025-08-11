@@ -27,7 +27,7 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
     const handleBlur = (field) => {
         if (field === "img" && !tempImg) setTempImg(originalValues.img);
         if (field === "name" && !tempName) setTempName(originalValues.name);
-        if (field === "chinese" && !tempCn) setTempName(originalValues.cn);
+        if (field === "chinese" && !tempCn) setTempCn(originalValues.cn);
         if (field === "price" && !tempPrice) setTempPrice(originalValues.price);
     };
 

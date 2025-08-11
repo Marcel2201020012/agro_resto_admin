@@ -69,7 +69,6 @@ export const MenuDetailsList = () => {
             return false;
         }
 
-        // Allow Chinese chars, middle dot (·), spaces, and numbers
         const onlyChineseRegex = /^[\u4e00-\u9fff0-9·\s]+$/;
         if (!onlyChineseRegex.test(value)) {
             setCnNameError("Only Chinese characters, numbers, and spaces are allowed.");
