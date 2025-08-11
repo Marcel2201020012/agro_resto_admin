@@ -136,6 +136,7 @@ export const MenuDetailsList = () => {
         setFoodName("");
         setFoodPrice("");
         setFoodImg("");
+        setCnName("");
     };
 
     if (isSaving) {

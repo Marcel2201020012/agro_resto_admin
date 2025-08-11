@@ -2,7 +2,7 @@ import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
-// 
+
 export const MenuListBox = ({ id, img, name, cn, price }) => {
     const originalValues = { img, name, cn, price };
 
