@@ -11,8 +11,70 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
     const [tempCn, setTempCn] = useState(cn);
     const [tempPrice, setTempPrice] = useState(price);
 
+    const [foodNameError, setFoodNameError] = useState("");
+    const [cnNameError, setCnNameError] = useState("");
+    const [foodImgError, setFoodImgError] = useState("");
+    const [foodPriceError, setFoodPriceError] = useState("");
+
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const validateCnName = (cnToCheck) => {
+        const value = cnToCheck.trim().normalize('NFKC').replace(/\u3000/g, ' ');
+
+        if (value.length === 0) {
+            setCnNameError("Please enter the Chinese name.");
+            return false;
+        }
+
+        const onlyChineseRegex = /^[\p{Script=Han}0-9·\s]+$/u;
+
+        if (!onlyChineseRegex.test(value)) {
+            setCnNameError("Only Chinese characters, numbers, and spaces are allowed.");
+            return false;
+        }
+
+        setCnNameError("");
+        return true;
+    };
+
+    const validateFoodName = (nameToCheck) => {
+        if (nameToCheck.trim().length < 1) {
+            setFoodNameError("Please enter the food name.");
+            return false;
+        }
+        setFoodNameError("");
+        return true;
+    };
+
+    const validateFoodPrice = (priceToCheck) => {
+        if (priceToCheck.trim().length < 1) {
+            setFoodPriceError("Please enter the food price.");
+            return false;
+        }
+        if (isNaN(priceToCheck) || Number(priceToCheck) <= 0) {
+            setFoodPriceError("Please enter a valid positive number.");
+            return false;
+        }
+        setFoodPriceError("");
+        return true;
+    };
+
+    const validateFoodImg = (imgToCheck) => {
+        if (imgToCheck.trim().length < 1) {
+            setFoodImgError("Please enter the food image link.");
+            return false;
+        }
+        try {
+            new URL(imgToCheck);
+        } catch (_) {
+            setFoodImgError("Please enter a valid URL.");
+            return false;
+        }
+        setFoodImgError("");
+        return true;
+    };
 
     const handleEditToggle = () => {
         if (!isEditing) {
@@ -29,6 +91,11 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         if (field === "name" && !tempName) setTempName(originalValues.name);
         if (field === "chinese" && !tempCn) setTempCn(originalValues.cn);
         if (field === "price" && !tempPrice) setTempPrice(originalValues.price);
+
+        if (field === "img" && tempImg) validateFoodImg();
+        if (field === "name" && tempName) validateFoodName();
+        if (field === "chinese" && tempCn) validateCnName();
+        if (field === "price" && tempPrice) validateFoodPrice();
     };
 
     const handleSave = async () => {
@@ -38,6 +105,22 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
             cn: tempCn.trim() === "" ? originalValues.cn : tempCn,
             price: tempPrice.trim() === "" ? originalValues.price : tempPrice,
         };
+
+        if (
+            !validateFoodName(updatedValues.name) ||
+            !validateCnName(updatedValues.cn) ||
+            !validateFoodPrice(updatedValues.price) ||
+            !validateFoodImg(updatedValues.image)
+        ) {
+            return;
+        }
+
+        setIsSaving(true);
+
+        setTempImg(updatedValues.image);
+        setTempName(updatedValues.name);
+        setTempCn(updatedValues.cn);
+        setTempPrice(updatedValues.price);
 
         await updateDoc(doc(db, "menu_makanan", id), updatedValues);
 
@@ -51,6 +134,7 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         setTempCn(updatedValues.cn);
         setTempPrice(updatedValues.price);
 
+        setIsSaving(false);
         setIsEditing(false);
     };
 
@@ -80,6 +164,9 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
                         onBlur={() => handleBlur("img")}
                         readOnly={!isEditing}
                     />
+                    {foodImgError && (
+                        <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
+                    )}
                     <input
                         className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
                             }`}
@@ -90,7 +177,10 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
                         onBlur={() => handleBlur("name")}
                         readOnly={!isEditing}
                     />
-                     <input
+                    {foodNameError && (
+                        <p className="text-red-500 mt-1 text-sm">{foodNameError}</p>
+                    )}
+                    <input
                         className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
                             }`}
                         type="text"
@@ -100,6 +190,9 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
                         onBlur={() => handleBlur("chinese")}
                         readOnly={!isEditing}
                     />
+                    {cnNameError && (
+                        <p className="text-red-500 mt-1 text-sm">{cnNameError}</p>
+                    )}
                     <input
                         className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
                             }`}
@@ -110,16 +203,28 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
                         onBlur={() => handleBlur("price")}
                         readOnly={!isEditing}
                     />
+                    {foodPriceError && (
+                        <p className="text-red-500 mt-1 text-sm">{foodPriceError}</p>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-2">
                     {isEditing ? (
                         <button
                             onClick={handleSave}
-                            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow"
-                        >
-                            <Edit size={16} />
-                            Save
+                            disabled={isSaving}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow text-white ${isSaving ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+                                }`}>
+                            {isSaving ? (
+                                <>
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Edit size={16} />
+                                    Save
+                                </>
+                            )}
                         </button>
                     ) : (
                         <button
@@ -132,7 +237,11 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
                     )}
                     <button
                         onClick={() => setShowConfirm(true)}
-                        className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow"
+                        disabled={isSaving || isEditing}
+                        className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg shadow ${isEditing
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-red-500 hover:bg-red-600"
+                            }`}
                     >
                         <Trash size={16} />
                         Delete
