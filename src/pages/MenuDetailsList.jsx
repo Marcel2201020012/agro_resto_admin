@@ -152,7 +152,7 @@ export const MenuDetailsList = () => {
         <div className="container min-h-screen overflow-x-hidden">
             <div className="relative text-left pt-8 pb-12">
                 <div className="text-agro-color font-medium">AGRO RESTO</div>
-                <div className="text-4xl font-bold">Edit Menu</div>
+                <div className="text-4xl font-bold">Edit Menu {category}</div>
             </div>
 
             <div className="flex justify-center">
@@ -231,7 +231,7 @@ export const MenuDetailsList = () => {
 
 
             <div className="text-left mt-8 font-bold text-4xl">
-                Menu List
+                {category} Menu List
             </div>
 
             <div className="flex flex-col items-center justify-center gap-8 mt-8 mb-8">

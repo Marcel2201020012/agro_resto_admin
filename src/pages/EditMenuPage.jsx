@@ -21,10 +21,15 @@ export const EditMenuPage = () => {
                 </div>
 
                 <div className="relative flex flex-col items-center justify-start gap-8 pt-8">
-                    <div className="flex gap-8">
+                    <div className="flex gap-8 w-3/4 overflow-x-scroll scrollbar-hide">
                         <EditMenuListBox img={mainDish} title={"Main Dish"} route={"/editMenu"} category={"Main Dish"}/>
                         <EditMenuListBox img={sideDish} title={"Side Dish"} route={"/editMenu"} category={"Sides"}/>
-                        <EditMenuListBox img={drinks} title={"Drinks"} route={"/editMenu"} category={"Drinks"}/>
+                        <EditMenuListBox img={drinks} title={"Coffee"} route={"/editMenu"} category={"Coffee"}/>
+                        <EditMenuListBox img={drinks} title={"Non-Coffee"} route={"/editMenu"} category={"Non-Coffee"}/>
+                        <EditMenuListBox img={drinks} title={"Juice"} route={"/editMenu"} category={"Juice"}/>
+                        <EditMenuListBox img={drinks} title={"Tea"} route={"/editMenu"} category={"Tea"}/>
+                        <EditMenuListBox img={drinks} title={"Soft Drink"} route={"/editMenu"} category={"Soft Drink"}/>
+                        <EditMenuListBox img={drinks} title={"Beer"} route={"/editMenu"} category={"Beer"}/>
                     </div>
                 </div>
 
