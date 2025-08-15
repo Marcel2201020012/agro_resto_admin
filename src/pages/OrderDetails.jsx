@@ -116,9 +116,21 @@ export const OrderDetails = () => {
                         <div>{result.tableId}</div>
                     </div>
 
-                    <div>
+                    {/* <div>
                         <div className="font-bold">Payment Methode</div>
                         <div>{result.payment}</div>
+                    </div> */}
+
+                    <div>
+                        <div className="font-bold">Payment URL</div>
+                        <a
+                            href={result?.paymentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline cursor-pointer transition-colors duration-200"
+                        >
+                            {result?.paymentUrl}
+                        </a>
                     </div>
 
                     <div>
@@ -138,7 +150,7 @@ export const OrderDetails = () => {
                                 <span>{item.name}</span>
                             </div>
                             <div className="text-right font-semibold">
-                                Rp{item.price}
+                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price)}
                             </div>
                         </div>
                     ))}
@@ -147,12 +159,11 @@ export const OrderDetails = () => {
                 <div className="flex justify-between mt-4 border-t pt-2">
                     <p className="font-semibold">Total</p>
                     <p className="text-green-700 font-semibold">
-                        Rp{
-                            Object.values(result.orderDetails).reduce(
-                                (sum, item) => sum + item.price * item.jumlah,
-                                0
-                            )
-                        }
+                        {new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(Number(result.total))}
                     </p>
                 </div>
             </div>
