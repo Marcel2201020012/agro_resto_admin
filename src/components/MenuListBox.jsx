@@ -1,24 +1,72 @@
 import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
-import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
-export const MenuListBox = ({ id, img, name, cn, price }) => {
-    const originalValues = { img, name, cn, price };
+export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
+    const originalValues = { img, name, desc, stocks, cn, price };
 
     const [tempImg, setTempImg] = useState(img);
     const [tempName, setTempName] = useState(name);
+    const [tempDesc, setTempDesc] = useState(desc);
     const [tempCn, setTempCn] = useState(cn);
     const [tempPrice, setTempPrice] = useState(price);
+    const [tempStocks, setTempStocks] = useState(stocks);
 
-    const [foodNameError, setFoodNameError] = useState("");
-    const [cnNameError, setCnNameError] = useState("");
     const [foodImgError, setFoodImgError] = useState("");
+    const [foodNameError, setFoodNameError] = useState("");
+    const [foodDescError, setFoodDescError] = useState("");
+    const [cnNameError, setCnNameError] = useState("");
     const [foodPriceError, setFoodPriceError] = useState("");
+    const [foodStocksError, setFoodStocksError] = useState();
+
 
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    // const addStocksField = async (value) => {
+    //     try {
+    //         const querySnapshot = await getDocs(collection(db, "menu_makanan"));
+    //         const updates = querySnapshot.docs.map((document) => {
+    //             const ref = doc(db, "menu_makanan", document.id);
+    //             return updateDoc(ref, { desc: value });
+    //         });
+
+    //         await Promise.all(updates);
+    //         console.log(`✅ Added stocks field with value ${value} to all menu items`);
+    //     } catch (error) {
+    //         console.error("❌ Error updating stocks:", error);
+    //     }
+    // };
+
+    // useState(() =>{
+    //     addStocksField("-")
+    // })
+
+    const validateFoodImg = (imgToCheck) => {
+        if (imgToCheck.trim().length < 1) {
+            setFoodImgError("Please enter the food image link.");
+            return false;
+        }
+        try {
+            new URL(imgToCheck);
+        } catch (_) {
+            setFoodImgError("Please enter a valid URL.");
+            return false;
+        }
+        setFoodImgError("");
+        return true;
+    };
+
+    const validateFoodName = (nameToCheck) => {
+        if (nameToCheck.trim().length < 1) {
+            setFoodNameError("Please enter the food name.");
+            return false;
+        }
+        setFoodNameError("");
+        return true;
+    };
 
     const validateCnName = (cnToCheck) => {
         const value = cnToCheck.trim().normalize('NFKC').replace(/\u3000/g, ' ');
@@ -39,12 +87,12 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         return true;
     };
 
-    const validateFoodName = (nameToCheck) => {
-        if (nameToCheck.trim().length < 1) {
-            setFoodNameError("Please enter the food name.");
+    const validateFoodDesc = (descToCheck) => {
+        if (descToCheck.trim().length < 1) {
+            setFoodDescError("Please enter food description.");
             return false;
         }
-        setFoodNameError("");
+        setFoodDescError("");
         return true;
     };
 
@@ -61,18 +109,19 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         return true;
     };
 
-    const validateFoodImg = (imgToCheck) => {
-        if (imgToCheck.trim().length < 1) {
-            setFoodImgError("Please enter the food image link.");
+    const validateFoodStock = (stockToCheck) => {
+        const num = Number(stockToCheck);
+
+        if (stockToCheck === "" || isNaN(num)) {
+            setFoodStocksError("Please enter the food stock.");
             return false;
         }
-        try {
-            new URL(imgToCheck);
-        } catch (_) {
-            setFoodImgError("Please enter a valid URL.");
+        if (num < 0) {
+            setFoodStocksError("Please enter a valid positive number.");
             return false;
         }
-        setFoodImgError("");
+
+        setFoodStocksError("");
         return true;
     };
 
@@ -81,21 +130,29 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
             setTempImg("");
             setTempName("");
             setTempCn("");
+            setTempDesc("");
             setTempPrice("");
+            setTempStocks("");
         }
         setIsEditing(!isEditing);
     };
 
     const handleBlur = (field) => {
+        if (!isEditing) return;
+
         if (field === "img" && !tempImg) setTempImg(originalValues.img);
         if (field === "name" && !tempName) setTempName(originalValues.name);
         if (field === "chinese" && !tempCn) setTempCn(originalValues.cn);
+        if (field === "desc" && !tempDesc) setTempDesc(originalValues.desc);
         if (field === "price" && !tempPrice) setTempPrice(originalValues.price);
+        if (field === "stocks" && !tempStocks) setTempStocks(originalValues.stocks);
 
-        if (field === "img" && tempImg) validateFoodImg();
-        if (field === "name" && tempName) validateFoodName();
-        if (field === "chinese" && tempCn) validateCnName();
-        if (field === "price" && tempPrice) validateFoodPrice();
+        if (field === "img" && tempImg) validateFoodImg(tempImg);
+        if (field === "name" && tempName) validateFoodName(tempName);
+        if (field === "chinese" && tempCn) validateCnName(tempCn);
+        if (field === "desc" && tempDesc) validateFoodDesc(tempDesc);
+        if (field === "price" && tempPrice) validateFoodPrice(tempPrice);
+        if (field === "stocks" && tempStocks) validateFoodStock(tempStocks);
     };
 
     const handleSave = async () => {
@@ -103,14 +160,18 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
             image: tempImg.trim() === "" ? originalValues.img : tempImg,
             name: tempName.trim() === "" ? originalValues.name : tempName,
             cn: tempCn.trim() === "" ? originalValues.cn : tempCn,
+            desc: tempDesc.trim() === "" ? originalValues.desc : tempDesc,
             price: tempPrice.trim() === "" ? originalValues.price : tempPrice,
+            stocks: tempStocks === "" ? originalValues.stocks : Number(tempStocks),
         };
 
         if (
+            !validateFoodImg(updatedValues.image) ||
             !validateFoodName(updatedValues.name) ||
             !validateCnName(updatedValues.cn) ||
+            !validateFoodDesc(updatedValues.desc) ||
             !validateFoodPrice(updatedValues.price) ||
-            !validateFoodImg(updatedValues.image)
+            !validateFoodStock(updatedValues.stocks)
         ) {
             return;
         }
@@ -120,7 +181,9 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         setTempImg(updatedValues.image);
         setTempName(updatedValues.name);
         setTempCn(updatedValues.cn);
+        setTempDesc(updatedValues.desc);
         setTempPrice(updatedValues.price);
+        setTempStocks(updatedValues.stocks);
 
         await updateDoc(doc(db, "menu_makanan", id), updatedValues);
 
@@ -128,16 +191,17 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
         originalValues.name = updatedValues.name;
         originalValues.cn = updatedValues.cn;
         originalValues.price = updatedValues.price;
+        originalValues.stocks = updatedValues.stocks;
 
         setTempImg(updatedValues.image);
         setTempName(updatedValues.name);
         setTempCn(updatedValues.cn);
         setTempPrice(updatedValues.price);
+        setTempStocks(updatedValues.stocks);
 
         setIsSaving(false);
         setIsEditing(false);
     };
-
 
     const handleDelete = async () => {
         await deleteDoc(doc(db, "menu_makanan", id));
@@ -145,67 +209,116 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
     };
 
     return (
-        <div className="bg-white border rounded-2xl px-6 py-4 shadow-md w-3/4">
+        <div className="bg-white border rounded-2xl px-6 py-4 shadow-md">
             <div className="flex gap-8 items-center">
                 <img
                     src={tempImg || originalValues.img}
                     alt="menu_icon"
-                    className="h-32 w-32 object-cover rounded-lg"
+                    className="h-40 w-40 object-cover rounded-lg"
                 />
 
-                <div className="flex flex-col flex-1 gap-3">
-                    <input
-                        className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                            }`}
-                        type="text"
-                        value={tempImg}
-                        placeholder="Input food image link"
-                        onChange={(e) => setTempImg(e.target.value)}
-                        onBlur={() => handleBlur("img")}
-                        readOnly={!isEditing}
-                    />
-                    {foodImgError && (
-                        <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
-                    )}
-                    <input
-                        className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                            }`}
-                        type="text"
-                        value={tempName}
-                        placeholder="Input food name"
-                        onChange={(e) => setTempName(e.target.value)}
-                        onBlur={() => handleBlur("name")}
-                        readOnly={!isEditing}
-                    />
-                    {foodNameError && (
-                        <p className="text-red-500 mt-1 text-sm">{foodNameError}</p>
-                    )}
-                    <input
-                        className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                            }`}
-                        type="text"
-                        value={tempCn}
-                        placeholder="Input chinese name"
-                        onChange={(e) => setTempCn(e.target.value)}
-                        onBlur={() => handleBlur("chinese")}
-                        readOnly={!isEditing}
-                    />
-                    {cnNameError && (
-                        <p className="text-red-500 mt-1 text-sm">{cnNameError}</p>
-                    )}
-                    <input
-                        className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                            }`}
-                        type="text"
-                        value={tempPrice}
-                        placeholder="Input food price"
-                        onChange={(e) => setTempPrice(e.target.value)}
-                        onBlur={() => handleBlur("price")}
-                        readOnly={!isEditing}
-                    />
-                    {foodPriceError && (
-                        <p className="text-red-500 mt-1 text-sm">{foodPriceError}</p>
-                    )}
+                <div className="grid grid-cols-2 gap-3 flex-1">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Image Link</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempImg}
+                            placeholder="Input food image link"
+                            onChange={(e) => setTempImg(e.target.value)}
+                            onBlur={() => handleBlur("img")}
+                            readOnly={!isEditing}
+                        />
+                        {foodImgError && (
+                            <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Food Name</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempName}
+                            placeholder="Input food name"
+                            onChange={(e) => setTempName(e.target.value)}
+                            onBlur={() => handleBlur("name")}
+                            readOnly={!isEditing}
+                        />
+                        {foodNameError && (
+                            <p className="text-red-500 mt-1 text-sm">{foodNameError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Chinese Name</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempCn}
+                            placeholder="Input chinese name"
+                            onChange={(e) => setTempCn(e.target.value)}
+                            onBlur={() => handleBlur("chinese")}
+                            readOnly={!isEditing}
+                        />
+                        {cnNameError && (
+                            <p className="text-red-500 mt-1 text-sm">{cnNameError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Food Description</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempDesc}
+                            placeholder="Input Food Description"
+                            onChange={(e) => setTempDesc(e.target.value)}
+                            onBlur={() => handleBlur("desc")}
+                            readOnly={!isEditing}
+                        />
+                        {foodDescError && (
+                            <p className="text-red-500 mt-1 text-sm">{foodDescError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Food Price</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempPrice}
+                            placeholder="Input food price"
+                            onChange={(e) => setTempPrice(e.target.value)}
+                            onBlur={() => handleBlur("price")}
+                            readOnly={!isEditing}
+                        />
+                        {foodPriceError && (
+                            <p className="text-red-500 mt-1 text-sm">{foodPriceError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Food Stocks</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempStocks}
+                            placeholder="Input food stock"
+                            onChange={(e) => setTempStocks(e.target.value)}
+                            onBlur={() => handleBlur("stocks")}
+                            readOnly={!isEditing}
+                        />
+                        {foodStocksError && (
+                            <p className="text-red-500 mt-1 text-sm">{foodStocksError}</p>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -239,8 +352,8 @@ export const MenuListBox = ({ id, img, name, cn, price }) => {
                         onClick={() => setShowConfirm(true)}
                         disabled={isSaving || isEditing}
                         className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg shadow ${isEditing
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-red-500 hover:bg-red-600"
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-red-500 hover:bg-red-600"
                             }`}
                     >
                         <Trash size={16} />

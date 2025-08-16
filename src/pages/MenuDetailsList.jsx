@@ -10,17 +10,23 @@ export const MenuDetailsList = () => {
     const location = useLocation();
     const category = location.state;
 
+    const [foodImg, setFoodImg] = useState("");
+    const [foodImgError, setFoodImgError] = useState("");
+
     const [foodName, setFoodName] = useState("");
     const [foodNameError, setFoodNameError] = useState("");
 
     const [cnName, setCnName] = useState("");
     const [cnNameError, setCnNameError] = useState("");
 
+    const [foodDesc, setFoodDesc] = useState("");
+    const [foodDescError, setFoodDescError] = useState("");
+
     const [foodPrice, setFoodPrice] = useState("");
     const [foodPriceError, setFoodPriceError] = useState("");
 
-    const [foodImg, setFoodImg] = useState("");
-    const [foodImgError, setFoodImgError] = useState("");
+    const [foodStocks, setFoodStocks] = useState("");
+    const [foodStocksError, setStocksError] = useState("");
 
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +51,21 @@ export const MenuDetailsList = () => {
     };
 
     const orders = getOrderByCategory(category);
+
+    const validateFoodImg = () => {
+        if (foodImg.trim().length < 1) {
+            setFoodImgError("Please enter the food image link.");
+            return false;
+        }
+        try {
+            new URL(foodImg);
+        } catch (_) {
+            setFoodImgError("Please enter a valid URL.");
+            return false;
+        }
+        setFoodImgError("");
+        return true;
+    };
 
     const validateFoodName = () => {
         if (foodName.trim().length < 1) {
@@ -74,6 +95,14 @@ export const MenuDetailsList = () => {
         return true;
     };
 
+    const validateFoodDesc = () => {
+        if (foodName.trim().length < 1) {
+            setFoodDescError("Please enter food description.");
+            return false;
+        }
+        setFoodDescError("");
+        return true;
+    };
 
     const validateFoodPrice = () => {
         if (foodPrice.trim().length < 1) {
@@ -88,25 +117,26 @@ export const MenuDetailsList = () => {
         return true;
     };
 
-    const validateFoodImg = () => {
-        if (foodImg.trim().length < 1) {
-            setFoodImgError("Please enter the food image link.");
+    const validateFoodStock = () => {
+        const num = Number(foodStocks);
+
+        if (foodStocks === "" || isNaN(num)) {
+            setStocksError("Please enter the food stock.");
             return false;
         }
-        try {
-            new URL(foodImg);
-        } catch (_) {
-            setFoodImgError("Please enter a valid URL.");
+        if (num < 0) {
+            setStocksError("Please enter a valid positive number.");
             return false;
         }
-        setFoodImgError("");
+
+        setStocksError("");
         return true;
     };
 
     const saveMenu = async (e) => {
         e.preventDefault();
 
-        if (!validateFoodName() || !validateCnName || !validateFoodPrice() || !validateFoodImg()) {
+        if (!validateFoodImg() || !validateFoodName() || !validateCnName() || !validateFoodDesc() || !validateFoodPrice() || !validateFoodStock()) {
             setIsSaving(false);
             return;
         }
@@ -114,10 +144,12 @@ export const MenuDetailsList = () => {
         setIsSaving(true);
 
         const menu = {
+            image: foodImg,
             name: foodName,
             cn: cnName,
-            image: foodImg,
+            desc: foodDesc,
             price: foodPrice,
+            stocks: foodStocks,
             category: category,
             createdAt: serverTimestamp()
         };
@@ -130,10 +162,12 @@ export const MenuDetailsList = () => {
             setIsSaving(false);
         }
 
-        setFoodName("");
-        setFoodPrice("");
         setFoodImg("");
+        setFoodName("");
         setCnName("");
+        setFoodDesc("");
+        setFoodPrice("");
+        setFoodStocks("");
     };
 
     if (isSaving) {
@@ -161,7 +195,22 @@ export const MenuDetailsList = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700">Name</label>
+                            <label className="text-sm font-medium text-gray-700">Image Link</label>
+                            <input
+                                className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${foodImgError ? "border-red-500" : ""}`}
+                                type="text"
+                                placeholder="Enter image URL"
+                                value={foodImg}
+                                onChange={e => setFoodImg(e.target.value)}
+                                onBlur={validateFoodImg}
+                            />
+                            {foodImgError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Food Name</label>
                             <input
                                 className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${foodNameError ? "border-red-500" : ""}`}
                                 type="text"
@@ -191,6 +240,21 @@ export const MenuDetailsList = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Food Description</label>
+                            <input
+                                className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${cnNameError ? "border-red-500" : ""}`}
+                                type="text"
+                                placeholder="Enter food description"
+                                value={foodDesc}
+                                onChange={e => setFoodDesc(e.target.value)}
+                                onBlur={validateFoodDesc}
+                            />
+                            {foodDescError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodDescError}</p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-700">Price</label>
                             <input
                                 className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${foodPriceError ? "border-red-500" : ""}`}
@@ -206,17 +270,17 @@ export const MenuDetailsList = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700">Image Link</label>
+                            <label className="text-sm font-medium text-gray-700">Stocks</label>
                             <input
-                                className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${foodImgError ? "border-red-500" : ""}`}
+                                className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${cnNameError ? "border-red-500" : ""}`}
                                 type="text"
-                                placeholder="Enter image URL"
-                                value={foodImg}
-                                onChange={e => setFoodImg(e.target.value)}
-                                onBlur={validateFoodImg}
+                                placeholder="Enter stocks"
+                                value={foodStocks}
+                                onChange={e => setFoodStocks(e.target.value)}
+                                onBlur={validateFoodStock}
                             />
-                            {foodImgError && (
-                                <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
+                            {foodStocksError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodStocksError}</p>
                             )}
                         </div>
                     </div>
@@ -234,7 +298,7 @@ export const MenuDetailsList = () => {
                 {category} Menu List
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-8 mt-8 mb-8">
+            <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8">
                 {orders.length === 0 ? (
                     <div>Menu is empty</div>
                 ) : (
@@ -245,7 +309,9 @@ export const MenuDetailsList = () => {
                             img={order.image}
                             name={order.name}
                             cn={order.cn}
+                            desc={order.desc}
                             price={order.price}
+                            stocks={order.stocks}
                         />
                     ))
                 )}
