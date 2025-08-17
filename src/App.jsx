@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
 import { ToolsPage } from "./pages/ToolsPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { OrderPage } from "./pages/OrderPage";
 import { SalesPage } from "./pages/SalesPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
@@ -29,6 +30,7 @@ function App() {
               <ToolsPage />
             </RequireAuth>
           } />
+          <Route path="/settings" element={<SettingsPage/>}/>
           <Route path="/order" element={<OrderPage />} />
           <Route path="/orderDetail/:id" element={<OrderDetails />} />
           <Route path="/sales" element={<SalesPage />} />

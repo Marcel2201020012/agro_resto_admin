@@ -33,7 +33,7 @@ export const EditMenuPage = () => {
                     </div>
                 </div>
 
-                <div onClick={() => navigate(-1)} className="bg-agro-color rounded-full px-6 py-2 w-45 absolute bottom-2 mb-12">
+                <div onClick={() => navigate(-1)} className="bg-agro-color rounded-full px-6 py-2 w-45 absolute bottom-2 mb-10">
                     <span className="text-white">
                         Back
                     </span>

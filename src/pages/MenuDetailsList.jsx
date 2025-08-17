@@ -179,7 +179,11 @@ export const MenuDetailsList = () => {
     }
 
     if (!order.every(item => item.createdAt) || isLoading) {
-        return <div>Loading Menu List...</div>;
+        return (
+            <div className="container min-h-screen flex justify-center items-center">
+                <p className="text-lg font-semibold">Loading Menu List...</p>
+            </div>
+        );
     }
 
     return (
@@ -191,7 +195,7 @@ export const MenuDetailsList = () => {
 
             <div className="flex justify-center">
                 <div className="text-left bg-white border p-8 rounded-2xl w-3/4">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Food Details</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Menu</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="flex flex-col gap-2">
@@ -300,7 +304,7 @@ export const MenuDetailsList = () => {
 
             <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8">
                 {orders.length === 0 ? (
-                    <div>Menu is empty</div>
+                    <div className="text-left text-red-500">Menu is empty</div>
                 ) : (
                     orders.map(order => (
                         <MenuListBox

@@ -28,7 +28,7 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8">
                         <ToolsBox img={orderImg} title={"Order"} route={"/order"} />
                         <ToolsBox img={salesImg} title={"Sales"} route={"/sales"} />
-                        <ToolsBox img={menuImg} title={"Edit Menu"} route={"/edit"} />
+                        <ToolsBox img={menuImg} title={"Settings"} route={"/settings"} />
                     </div>
                 </div>
             </main>
