@@ -6,6 +6,7 @@ import { OrderPage } from "./pages/OrderPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
 import { OrderDetails } from "./pages/OrderDetails";
 import { MenuDetailsList } from "./pages/MenuDetailsList";
+import ScrollToTop from "./components/ScrollToTop";
 
 import RequireAuth from "../hooks/RequireAuth";
 
@@ -14,13 +15,14 @@ import { ToastContainer } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
 
 function App() {
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   return (
     <>
       <BrowserRouter>
         {user && <OrderListener />}
-        <ToastContainer position="top-right" closeButton={false}/>
+        <ToastContainer position="top-right" closeButton={false} />
+        <ScrollToTop />
         <Routes>
           <Route index element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -29,11 +31,11 @@ function App() {
               <ToolsPage />
             </RequireAuth>
           } />
-          <Route path="/settings" element={<SettingsPage/>}/>
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/order" element={<OrderPage />} />
           <Route path="/orderDetail/:id" element={<OrderDetails />} />
           <Route path="/edit" element={<EditMenuPage />} />
-          <Route path="/editMenu" element={<MenuDetailsList/>} />
+          <Route path="/editMenu" element={<MenuDetailsList />} />
         </Routes>
       </BrowserRouter>
     </>
