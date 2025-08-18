@@ -18,12 +18,12 @@ export const OrderBox = ({ id, date, status, customerName }) => {
     };
 
     return (
-        <div onClick={() => navigate(`/orderDetail/${id}`)} className="border rounded-2xl bg-white p-8 max-h-28 hover:scale-[1.02] hover:shadow-lg">
+        <div onClick={() => navigate(`/orderDetail/${id}`)} className="border rounded-2xl bg-white p-4 max-h-20 hover:scale-[1.02] hover:shadow-lg">
             <div className="grid grid-cols-2">
                 <div className="text-left font-medium">
                     {id}
                 </div>
-                <div className="text-right">
+                <div className="text-left">
                     {formatDate(date)}
                 </div>
                 <div
@@ -38,7 +38,10 @@ export const OrderBox = ({ id, date, status, customerName }) => {
                     className="text-left"
                 >
                     {/* {status} */}
-                    Ordered by: {customerName}
+                    Ordered by:
+                </div>
+                <div className="text-left">
+                    {customerName}
                 </div>
 
             </div>
