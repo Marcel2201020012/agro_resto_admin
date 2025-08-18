@@ -104,6 +104,11 @@ export const OrderDetails = () => {
                     </div>
 
                     <div>
+                        <div className="font-bold">Order Type</div>
+                        <div>{result.orderType}</div>
+                    </div>
+
+                    <div>
                         <div className="font-bold">Customer Name</div>
                         <div>{result.customerName}</div>
                     </div>

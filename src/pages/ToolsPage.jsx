@@ -2,9 +2,10 @@ import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import { Background } from "../components/Background";
 import { ToolsBox } from "../components/ToolsBox";
+import { ToolsBoxSales } from "../components/ToolBoxSales";
 
-import menuImg from "../assets/tools_img/menuImg.svg"
-import salesImg from "../assets/tools_img/salesImg.svg"
+import settingImg from "../assets/tools_img/settings.png"
+import salesImg from "../assets/tools_img/salesImg.png"
 import orderImg from "../assets/tools_img/orderImg.svg"
 
 import bg from "../assets/bg/bg_1.png"
@@ -27,8 +28,8 @@ export const ToolsPage = () => {
 
                     <div className="relative flex gap-8">
                         <ToolsBox img={orderImg} title={"Order"} route={"/order"} />
-                        <ToolsBox img={salesImg} title={"Sales"} route={"/sales"} />
-                        <ToolsBox img={menuImg} title={"Settings"} route={"/settings"} />
+                        <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} />
+                        <ToolsBox img={settingImg} title={"Settings"} route={"/settings"} />
                     </div>
                 </div>
             </main>
