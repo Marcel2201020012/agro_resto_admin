@@ -81,6 +81,7 @@ export const OrderPage = () => {
                                 id={order.id}
                                 date={order.createdAt}
                                 status={order.status}
+                                customerName={order.customerName}
                             />
                         ))}
                     </div>
@@ -99,6 +100,7 @@ export const OrderPage = () => {
                                 id={order.id}
                                 date={order.createdAt}
                                 status={order.status}
+                                customerName={order.customerName}
                             />
                         ))}
                     </div>
@@ -117,6 +119,7 @@ export const OrderPage = () => {
                                 id={order.id}
                                 date={order.createdAt}
                                 status={order.status}
+                                customerName={order.customerName}
                             />
                         ))}
                     </div>
@@ -135,6 +138,7 @@ export const OrderPage = () => {
                                 id={order.id}
                                 date={order.createdAt}
                                 status={order.status}
+                                customerName={order.customerName}
                             />
                         ))}
                     </div>

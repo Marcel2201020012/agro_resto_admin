@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export const OrderBox = ({ id, date, status }) => {
+export const OrderBox = ({ id, date, status, customerName }) => {
     const navigate = useNavigate();
 
     const formatDate = (timestamp) => {
@@ -27,16 +27,18 @@ export const OrderBox = ({ id, date, status }) => {
                     {formatDate(date)}
                 </div>
                 <div
-                    className={`text-left ${status === 'Waiting For Payment On Cashier'
-                        ? 'text-orange-700'
-                        : status === 'Preparing Food'
-                            ? 'text-yellow-700'
-                            : status === 'Order Canceled'
-                                ? 'text-red-700'
-                                : 'text-gray-700'
-                        }`}
+                    // className={`text-left ${status === 'Waiting For Payment On Cashier'
+                    //     ? 'text-orange-700'
+                    //     : status === 'Preparing Food'
+                    //         ? 'text-yellow-700'
+                    //         : status === 'Order Canceled'
+                    //             ? 'text-red-700'
+                    //             : 'text-gray-700'
+                    //     }`}
+                    className="text-left"
                 >
-                    {status}
+                    {/* {status} */}
+                    Ordered by: {customerName}
                 </div>
 
             </div>

@@ -134,6 +134,12 @@ export const OrderDetails = () => {
                     </div>
 
                     <div>
+                        <div className="font-bold">Notes</div>
+                        <div>{result.notes}</div>
+                    </div>
+
+
+                    <div>
                         <div className="font-bold">Status</div>
                         <div>{result.status}</div>
                     </div>
