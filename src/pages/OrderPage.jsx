@@ -55,7 +55,9 @@ export const OrderPage = () => {
         return () => unsub();
     }, []);
 
-    if (isLoading) return <div className="text-center mt-10">Loading...</div>;
+    if (isLoading) return <div className="container min-h-screen flex justify-center items-center">
+                <p className="text-lg font-semibold">Loading Menu List...</p>
+            </div>;
 
     return (
         <div className="container min-h-screen overflow-x-hidden">

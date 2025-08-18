@@ -22,7 +22,9 @@ export const LoginPage = () => {
         return () => unsub();
     }, [navigate]);
 
-    if (loading) return <div className="text-center mt-10">Loading...</div>;
+    if (loading) return <div className="container min-h-screen flex justify-center items-center">
+                <p className="text-lg font-semibold">Loading...</p>
+            </div>;
 
     return (
         <div className="min-h-screen overflow-x-hidden overflow-y-hidden m-16">

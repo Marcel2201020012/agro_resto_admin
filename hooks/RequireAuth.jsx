@@ -6,7 +6,9 @@ export default function RequireAuth({ children }){
   const navigate = useNavigate();
 
   if (checking) {
-    return <div className="text-center mt-10">Loading...</div>;
+    return <div className="container min-h-screen flex justify-center items-center">
+                <p className="text-lg font-semibold">Loading...</p>
+            </div>;
   }
 
   if (!user){

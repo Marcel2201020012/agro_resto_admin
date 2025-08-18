@@ -3,7 +3,6 @@ import { LoginPage } from "./pages/LoginPage";
 import { ToolsPage } from "./pages/ToolsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { OrderPage } from "./pages/OrderPage";
-import { SalesPage } from "./pages/SalesPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
 import { OrderDetails } from "./pages/OrderDetails";
 import { MenuDetailsList } from "./pages/MenuDetailsList";
@@ -33,7 +32,6 @@ function App() {
           <Route path="/settings" element={<SettingsPage/>}/>
           <Route path="/order" element={<OrderPage />} />
           <Route path="/orderDetail/:id" element={<OrderDetails />} />
-          <Route path="/sales" element={<SalesPage />} />
           <Route path="/edit" element={<EditMenuPage />} />
           <Route path="/editMenu" element={<MenuDetailsList/>} />
         </Routes>
