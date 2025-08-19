@@ -42,7 +42,7 @@ export default function OrderListener() {
                         onClick: () => {
                             audioRef.current.pause();
                             audioRef.current.currentTime = 0;
-                            navigate("/order");
+                            navigate(`/orderDetail/${latestOrderId}`);
                             toast.dismiss();
                         }
                     });

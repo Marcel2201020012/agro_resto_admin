@@ -4,6 +4,7 @@ import { ToolsPage } from "./pages/ToolsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { OrderPage } from "./pages/OrderPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
+import { EditUserPage } from "./pages/EditUserPage";
 import { OrderDetails } from "./pages/OrderDetails";
 import { MenuDetailsList } from "./pages/MenuDetailsList";
 import ScrollToTop from "./components/ScrollToTop";
@@ -36,6 +37,7 @@ function App() {
           <Route path="/orderDetail/:id" element={<OrderDetails />} />
           <Route path="/edit" element={<EditMenuPage />} />
           <Route path="/editMenu" element={<MenuDetailsList />} />
+          <Route path="/editUser" element={<EditUserPage />} />
         </Routes>
       </BrowserRouter>
     </>

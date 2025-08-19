@@ -1,50 +1,56 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 
 export const OrderBox = ({ id, date, status, customerName }) => {
     const navigate = useNavigate();
+    const [isCancelled, setIsCancelled] = useState(false);
 
     const formatDate = (timestamp) => {
-        const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-
-        const pad = (num) => String(num).padStart(2, "0");
-
-        const day = pad(date.getDate());
-        const month = pad(date.getMonth() + 1);
-        const year = date.getFullYear();
-        const hour = pad(date.getHours());
-        const minute = pad(date.getMinutes());
-
-        return `${month}/${day}/${year} ${hour}:${minute}`;
+        const d = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
 
-    return (
-        <div onClick={() => navigate(`/orderDetail/${id}`)} className="border rounded-2xl bg-white p-4 max-h-20 hover:scale-[1.02] hover:shadow-lg">
-            <div className="grid grid-cols-2">
-                <div className="text-left font-medium">
-                    {id}
-                </div>
-                <div className="text-left">
-                    {formatDate(date)}
-                </div>
-                <div
-                    // className={`text-left ${status === 'Waiting For Payment On Cashier'
-                    //     ? 'text-orange-700'
-                    //     : status === 'Preparing Food'
-                    //         ? 'text-yellow-700'
-                    //         : status === 'Order Canceled'
-                    //             ? 'text-red-700'
-                    //             : 'text-gray-700'
-                    //     }`}
-                    className="text-left"
-                >
-                    {/* {status} */}
-                    Ordered by:
-                </div>
-                <div className="text-left">
-                    {customerName}
-                </div>
+    const handleDelete = async (e) => {
+        e.stopPropagation();
+        try {
+            await deleteDoc(doc(db, "transaction_id", id));
+            console.log(`Order ${id} deleted`);
+        } catch (err) {
+            console.error("Failed to delete order:", err);
+        }
+    };
 
+    useEffect(() => {
+        setIsCancelled(status === "Order Canceled");
+    }, [status]);
+
+    return (
+        <div
+            onClick={() => navigate(`/orderDetail/${id}`)}
+            className="relative group border rounded-xl bg-white p-3 hover:scale-[1.03] hover:shadow-md cursor-pointer transition-all duration-200 max-h-22"
+        >
+            <div className="flex flex-col gap-1">
+                <div className="grid grid-cols-2 text-sm font-medium">
+                    <span className="text-left">#{id}</span>
+                    <span className="text-right text-gray-500">{formatDate(date)}</span>
+                </div>
+                <div className="grid grid-cols-2 text-xs text-gray-600">
+                    <span className="text-left">Ordered by: </span>
+                    <span className="text-right">{customerName}</span>
+                </div>
             </div>
+
+            {isCancelled && (
+                <button
+                    onClick={handleDelete}
+                    className="absolute top-2 right-2 text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded hover:bg-red-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                    Delete
+                </button>
+            )}
         </div>
     );
-}
+};

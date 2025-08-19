@@ -71,13 +71,13 @@ export const OrderPage = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2">
+            <div className="grid grid-cols-2 gap-4">
                 {waitingOrders.length > 0 && (
                     <div>
-                        <div className="text-left font-medium text-orange-700">
+                        <div className="text-left font-semibold text-orange-600 mb-2">
                             Waiting For Payment On Cashier
                         </div>
-                        <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${waitingHeight}`}>
+                        <div className={`grid grid-cols-2 gap-2 overflow-y-scroll scrollbar-hide p-2 ${waitingHeight}`}>
                             {waitingOrders.map(order => (
                                 <OrderBox
                                     key={order.id}
@@ -93,10 +93,10 @@ export const OrderPage = () => {
 
                 {preparingOrders.length > 0 && (
                     <div>
-                        <div className="text-left font-medium text-yellow-700">
+                        <div className="text-left font-medium text-yellow-600 mb-2">
                             Preparing Food
                         </div>
-                        <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${preparingHeight}`}>
+                        <div className={`grid grid-cols-2 gap-2 overflow-y-scroll scrollbar-hide p-2 ${preparingHeight}`}>
                             {preparingOrders.map(order => (
                                 <OrderBox
                                     key={order.id}
@@ -112,10 +112,10 @@ export const OrderPage = () => {
 
                 {finishedOrders.length > 0 && (
                     <div>
-                        <div className="text-left font-medium text-gray-700">
+                        <div className="text-left font-medium text-gray-600 mb-2">
                             Order Finished
                         </div>
-                        <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${finishedHeight}`}>
+                        <div className={`grid grid-cols-2 gap-2 overflow-y-scroll scrollbar-hide p-2 ${finishedHeight}`}>
                             {finishedOrders.map(order => (
                                 <OrderBox
                                     key={order.id}
@@ -131,10 +131,10 @@ export const OrderPage = () => {
 
                 {canceledOrders.length > 0 && (
                     <div>
-                        <div className="text-left font-medium text-red-700">
+                        <div className="text-left font-medium text-red-600 mb-2">
                             Order Canceled
                         </div>
-                        <div className={`grid grid-cols-2 gap-4 overflow-y-scroll scrollbar-hide p-4 mb-4 ${canceledHeight}`}>
+                        <div className={`grid grid-cols-2 gap-2 overflow-y-scroll scrollbar-hide p-2 ${canceledHeight}`}>
                             {canceledOrders.map(order => (
                                 <OrderBox
                                     key={order.id}
