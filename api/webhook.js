@@ -12,7 +12,8 @@ export default async function handler(req, res) {
       clientKey: process.env.MIDTRANS_CLIENT_KEY_SANDBOX,
     });
 
-    const statusResponse = await coreApi.transaction.notification(req.body);
+    // const statusResponse = await coreApi.transaction.notification(req.body);
+    const statusResponse = req.body;
 
     const orderId = statusResponse.order_id;
     const transactionStatus = statusResponse.transaction_status;
