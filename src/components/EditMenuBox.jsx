@@ -3,14 +3,15 @@ import { useState } from "react";
 import { doc, updateDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
-export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
-    const originalValues = { img, name, desc, stocks, cn, price };
+export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks }) => {
+    const originalValues = { img, name, desc, cn, price, promotion, stocks };
 
     const [tempImg, setTempImg] = useState(img);
     const [tempName, setTempName] = useState(name);
     const [tempDesc, setTempDesc] = useState(desc);
     const [tempCn, setTempCn] = useState(cn);
     const [tempPrice, setTempPrice] = useState(price);
+    const [tempPromotionPrice, setTempPromotionPrice] = useState(promotion);
     const [tempStocks, setTempStocks] = useState(stocks);
 
     const [foodImgError, setFoodImgError] = useState("");
@@ -18,8 +19,8 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
     const [foodDescError, setFoodDescError] = useState("");
     const [cnNameError, setCnNameError] = useState("");
     const [foodPriceError, setFoodPriceError] = useState("");
+    const [promotionPriceError, setPromotionPriceError] = useState();
     const [foodStocksError, setFoodStocksError] = useState();
-
 
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -30,7 +31,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
     //         const querySnapshot = await getDocs(collection(db, "menu_makanan"));
     //         const updates = querySnapshot.docs.map((document) => {
     //             const ref = doc(db, "menu_makanan", document.id);
-    //             return updateDoc(ref, { desc: value });
+    //             return updateDoc(ref, { promotion: value });
     //         });
 
     //         await Promise.all(updates);
@@ -41,7 +42,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
     // };
 
     // useState(() =>{
-    //     addStocksField("-")
+    //     addStocksField(0)
     // })
 
     const validateFoodImg = (imgToCheck) => {
@@ -109,6 +110,15 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
         return true;
     };
 
+    const validatePromotionPrice = (promotionToCheck, priceToCheck) => {
+        if (isNaN(priceToCheck) || isNaN(promotionToCheck) || Number(promotionToCheck) < 0 || Number(promotionToCheck) > Number(priceToCheck)) {
+            setPromotionPriceError("Please enter value lower than normal price.");
+            return false;
+        }
+        setPromotionPriceError("");
+        return true;
+    }
+
     const validateFoodStock = (stockToCheck) => {
         const num = Number(stockToCheck);
 
@@ -132,6 +142,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
             setTempCn("");
             setTempDesc("");
             setTempPrice("");
+            setTempPromotionPrice("");
             setTempStocks("");
         }
         setIsEditing(!isEditing);
@@ -145,6 +156,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
         if (field === "chinese" && !tempCn) setTempCn(originalValues.cn);
         if (field === "desc" && !tempDesc) setTempDesc(originalValues.desc);
         if (field === "price" && !tempPrice) setTempPrice(originalValues.price);
+        if (field === "promotion" && !tempPromotionPrice) setTempPrice(originalValues.promotion);
         if (field === "stocks" && !tempStocks) setTempStocks(originalValues.stocks);
 
         if (field === "img" && tempImg) validateFoodImg(tempImg);
@@ -152,6 +164,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
         if (field === "chinese" && tempCn) validateCnName(tempCn);
         if (field === "desc" && tempDesc) validateFoodDesc(tempDesc);
         if (field === "price" && tempPrice) validateFoodPrice(tempPrice);
+        if (field === "promotion" && tempPromotionPrice) validatePromotionPrice(tempPromotionPrice, price);
         if (field === "stocks" && tempStocks) validateFoodStock(tempStocks);
     };
 
@@ -162,6 +175,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
             cn: tempCn.trim() === "" ? originalValues.cn : tempCn,
             desc: tempDesc.trim() === "" ? originalValues.desc : tempDesc,
             price: tempPrice.trim() === "" ? originalValues.price : tempPrice,
+            promotion: tempPromotionPrice.trim() === "" ? originalValues.promotion : Number(tempPromotionPrice),
             stocks: tempStocks === "" ? originalValues.stocks : Number(tempStocks),
         };
 
@@ -171,6 +185,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
             !validateCnName(updatedValues.cn) ||
             !validateFoodDesc(updatedValues.desc) ||
             !validateFoodPrice(updatedValues.price) ||
+            !validatePromotionPrice(updatedValues.promotion, price) ||
             !validateFoodStock(updatedValues.stocks)
         ) {
             return;
@@ -183,6 +198,7 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
         setTempCn(updatedValues.cn);
         setTempDesc(updatedValues.desc);
         setTempPrice(updatedValues.price);
+        setTempPromotionPrice(updatedValues.promotion);
         setTempStocks(updatedValues.stocks);
 
         await updateDoc(doc(db, "menu_makanan", id), updatedValues);
@@ -191,12 +207,14 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
         originalValues.name = updatedValues.name;
         originalValues.cn = updatedValues.cn;
         originalValues.price = updatedValues.price;
+        originalValues.promotion = updatedValues.promotion;
         originalValues.stocks = updatedValues.stocks;
 
         setTempImg(updatedValues.image);
         setTempName(updatedValues.name);
         setTempCn(updatedValues.cn);
         setTempPrice(updatedValues.price);
+        setTempPromotionPrice(updatedValues.promotion);
         setTempStocks(updatedValues.stocks);
 
         setIsSaving(false);
@@ -293,13 +311,30 @@ export const MenuListBox = ({ id, img, name, desc, stocks, cn, price }) => {
                                 }`}
                             type="text"
                             value={tempPrice}
-                            placeholder="Input food price"
+                            placeholder="Input Food Price"
                             onChange={(e) => setTempPrice(e.target.value)}
                             onBlur={() => handleBlur("price")}
                             readOnly={!isEditing}
                         />
                         {foodPriceError && (
                             <p className="text-red-500 mt-1 text-sm">{foodPriceError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Promotion Price</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempPromotionPrice}
+                            placeholder="Input Promo"
+                            onChange={(e) => setTempPromotionPrice(e.target.value)}
+                            onBlur={() => handleBlur("promotion")}
+                            readOnly={!isEditing}
+                        />
+                        {promotionPriceError && (
+                            <p className="text-red-500 mt-1 text-sm">{promotionPriceError}</p>
                         )}
                     </div>
 

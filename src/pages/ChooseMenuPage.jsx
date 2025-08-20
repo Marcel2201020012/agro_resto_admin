@@ -29,7 +29,7 @@ export const ChooseMenuPage = () => {
             <main className="flex items-center justify-center min-h-screen">
                 <div className="relative flex flex-col items-center justify-start gap-8 pt-4">
                     <div className="font-bold text-white text-center text-3xl">
-                        <span>Menu Settings</span>
+                        <span>Edit Menu</span>
                     </div>
 
                     <div className="relative flex items-center w-full max-w-5xl">

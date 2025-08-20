@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { MenuListBox } from "../components/MenuListBox";
-import { addDoc, collection, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { EditMenuBox } from "../components/EditMenuBox";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -10,7 +10,6 @@ export const EditMenuPage = () => {
     const location = useLocation();
     const category = location.state;
 
-    const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -34,14 +33,6 @@ export const EditMenuPage = () => {
 
     const orders = getOrderByCategory(category);
 
-    if (isSaving) {
-        return (
-            <div className="container min-h-screen flex justify-center items-center">
-                <p className="text-lg font-semibold">Saving new menu...</p>
-            </div>
-        )
-    }
-
     if (!order.every(item => item.createdAt) || isLoading) {
         return (
             <div className="container min-h-screen flex justify-center items-center">
@@ -61,7 +52,7 @@ export const EditMenuPage = () => {
                     <div className="text-left text-red-500">Menu is empty</div>
                 ) : (
                     orders.map(order => (
-                        <MenuListBox
+                        <EditMenuBox
                             key={order.id}
                             id={order.id}
                             img={order.image}
@@ -69,6 +60,7 @@ export const EditMenuPage = () => {
                             cn={order.cn}
                             desc={order.desc}
                             price={order.price}
+                            promotion={order.promotion}
                             stocks={order.stocks}
                         />
                     ))
