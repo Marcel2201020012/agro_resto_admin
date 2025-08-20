@@ -1,15 +1,44 @@
+import { useState, useEffect } from "react";
 import { Background } from "../components/Background";
 import { ToolsBox } from "../components/ToolsBox";
 
 import menuImg from "../assets/tools_img/menuImg.svg"
-import orderImg from "../assets/tools_img/orderImg.svg"
 import userImg from "../assets/tools_img/user.png"
 
 import bg from "../assets/bg/bg_1.png"
 import { useNavigate } from "react-router-dom";
 
+import { db, auth } from "../../firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+
+async function getUserRole() {
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    const roleRef = doc(db, "admin_accounts", user.uid);
+    const snap = await getDoc(roleRef);
+
+    if (snap.exists()) {
+        return snap.data().role;
+    }
+    return null;
+}
+
 export const SettingsPage = () => {
     const navigate = useNavigate();
+    const [role, setRole] = useState(null);
+
+    useEffect(() => {
+        getUserRole().then((r) => {
+            if (r !== "admin") {
+                navigate("/");
+            } else {
+                setRole(r);
+            }
+        });
+    }, [navigate]);
+
+    if (role !== "admin") return null;
 
     return (
         <div className="container min-h-screen overflow-x-hidden overflow-y-hidden">

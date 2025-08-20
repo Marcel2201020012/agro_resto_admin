@@ -43,11 +43,12 @@ export const OrderDetails = () => {
         if (!id) return;
 
         if (modalAction === 'confirm') {
-            updateStatus(id, "Preparing Food");
+            updateStatus(id, "", result.tableId);
+
         } else if (modalAction === 'cancel') {
-            updateStatus(id, "Order Canceled");
+            updateStatus(id, "Order Canceled", result.tableId);
         } else if (modalAction === 'finish') {
-            updateStatus(id, "Order Finished");
+            updateStatus(id, "Order Finished", result.tableId);
         }
 
         setShowModal(false);
@@ -69,20 +70,32 @@ export const OrderDetails = () => {
         setShowModal(true);
     };
 
-    const updateStatus = async (id, statusValue) => {
+    const updateStatus = async (id, statusValue, tableId) => {
+        setLoading(true);
         try {
             const orderRef = doc(db, "transaction_id", id);
-            await updateDoc(orderRef, {
-                status: statusValue,
-            });
+            if (statusValue === "") {
+                await updateDoc(orderRef, {
+                    paymentUrl: "Pay With Cash"
+                });
+
+                window.open(`https://agro-resto-client.vercel.app/confirm?orderId=${id}&tableId=${tableId}&transaction_status=settlement`);
+            } else {
+                await updateDoc(orderRef, {
+                    status: statusValue,
+                    paymentUrl: ""
+                });
+            }
         } catch (error) {
             console.error("Error updating status:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
     if (loading) return <div className="container min-h-screen flex justify-center items-center">
-                <p className="text-lg font-semibold">Loading...</p>
-            </div>;
+        <p className="text-lg font-semibold">Loading...</p>
+    </div>;
 
     return (
         <div className="container min-h-screen overflow-x-hidden">
