@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
-import { MenuListBox } from "../components/MenuListBox";
-import { addDoc, collection, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export const MenuDetailsList = () => {
+export const AddMenuPage = () => {
     const navigate = useNavigate();
-    const [order, setOrder] = useState([]);
-    const location = useLocation();
-    const category = location.state;
+
+    const [foodCategory, setFoodCategory] = useState("");
+    const [foodCategoryError, setFoodCategoryError] = useState("");
 
     const [foodImg, setFoodImg] = useState("");
     const [foodImgError, setFoodImgError] = useState("");
@@ -29,28 +28,15 @@ export const MenuDetailsList = () => {
     const [foodStocksError, setStocksError] = useState("");
 
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const unsub = onSnapshot(collection(db, "menu_makanan"), (snapshot) => {
-            const orderData = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setOrder(orderData);
-            setIsLoading(false);
-        })
-
-        return () => unsub();
-    }, []);
-
-    const getOrderByCategory = (category) => {
-        return order
-            .filter(item => item.category === category && item.createdAt)
-            .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
-    };
-
-    const orders = getOrderByCategory(category);
+    const validateFoodCategory = () => {
+        if (foodCategory === "") {
+            setFoodCategoryError("Please choose food category.");
+            return false;
+        }
+        setFoodCategoryError("");
+        return true;
+    }
 
     const validateFoodImg = () => {
         if (foodImg.trim().length < 1) {
@@ -136,7 +122,7 @@ export const MenuDetailsList = () => {
     const saveMenu = async (e) => {
         e.preventDefault();
 
-        if (!validateFoodImg() || !validateFoodName() || !validateCnName() || !validateFoodDesc() || !validateFoodPrice() || !validateFoodStock()) {
+        if (!validateFoodCategory() || !validateFoodImg() || !validateFoodName() || !validateCnName() || !validateFoodDesc() || !validateFoodPrice() || !validateFoodStock()) {
             setIsSaving(false);
             return;
         }
@@ -144,13 +130,13 @@ export const MenuDetailsList = () => {
         setIsSaving(true);
 
         const menu = {
+            category: foodCategory,
             image: foodImg,
             name: foodName,
             cn: cnName,
             desc: foodDesc,
             price: foodPrice,
             stocks: foodStocks,
-            category: category,
             createdAt: serverTimestamp()
         };
 
@@ -162,6 +148,7 @@ export const MenuDetailsList = () => {
             setIsSaving(false);
         }
 
+        setFoodCategory("");
         setFoodImg("");
         setFoodName("");
         setCnName("");
@@ -178,26 +165,40 @@ export const MenuDetailsList = () => {
         )
     }
 
-    if (!order.every(item => item.createdAt) || isLoading) {
-        return (
-            <div className="container min-h-screen flex justify-center items-center">
-                <p className="text-lg font-semibold">Loading Menu List...</p>
-            </div>
-        );
-    }
-
     return (
         <div className="container min-h-screen overflow-x-hidden">
             <div className="relative text-left pt-8 pb-12">
                 <div className="text-agro-color font-medium">AGRO RESTO</div>
-                <div className="text-4xl font-bold">Edit Menu {category}</div>
+                <div className="text-4xl font-bold">Add Menu</div>
             </div>
 
             <div className="flex justify-center">
                 <div className="text-left bg-white border p-8 rounded-2xl w-3/4">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Menu</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Food Category</label>
+                            <select
+                                className={`border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${foodCategoryError ? "border-red-500" : ""}`}
+                                value={foodCategory}
+                                onChange={e => setFoodCategory(e.target.value)}
+                                onBlur={validateFoodCategory}
+                            >
+                                <option value="">-- Select Food Category --</option>
+                                <option value="Main Dish">Main Dish</option>
+                                <option value="Sides">Sides</option>
+                                <option value="Coffee">Coffee</option>
+                                <option value="Non-Coffeee">Non-Coffee</option>
+                                <option value="Juice">Juice</option>
+                                <option value="Tea">Tea</option>
+                                <option value="Soft Drink">Soft Drink</option>
+                                <option value="Beer">Beer</option>
+                            </select>
+                            {foodCategoryError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodCategoryError}</p>
+                            )}
+                        </div>
+
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-700">Image Link</label>
                             <input
@@ -297,35 +298,11 @@ export const MenuDetailsList = () => {
                 </div>
             </div>
 
-
-            <div className="text-left mt-8 font-bold text-4xl">
-                {category} Menu List
-            </div>
-
-            <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8">
-                {orders.length === 0 ? (
-                    <div className="text-left text-red-500">Menu is empty</div>
-                ) : (
-                    orders.map(order => (
-                        <MenuListBox
-                            key={order.id}
-                            id={order.id}
-                            img={order.image}
-                            name={order.name}
-                            cn={order.cn}
-                            desc={order.desc}
-                            price={order.price}
-                            stocks={order.stocks}
-                        />
-                    ))
-                )}
-            </div>
-
-            <div onClick={() => navigate(-1)} className="bg-agro-color rounded-full px-6 py-2 w-45 mb-8">
+            <div onClick={() => navigate(-1)} className="bg-agro-color absolute bottom-12 rounded-full px-6 py-2 w-45">
                 <span className="text-white">
                     Back
                 </span>
             </div>
         </div>
-    );
-}
+    )
+};

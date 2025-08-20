@@ -51,9 +51,9 @@ export const SettingsPage = () => {
                         <span>Settings</span>
                     </div>
 
-                    <div className="relative flex gap-8">
+                    <div className="relative flex gap-8 p-4">
                         <ToolsBox img={userImg} title={"Users"} route={"/editUser"} />
-                        <ToolsBox img={menuImg} title={"Edit Menu"} route={"/edit"} />
+                        <ToolsBox img={menuImg} title={"Menu Settings"} route={"/menuSetting"} />
                     </div>
                 </div>
             </main>

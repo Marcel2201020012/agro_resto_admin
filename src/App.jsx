@@ -2,11 +2,17 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
 import { ToolsPage } from "./pages/ToolsPage";
 import { SettingsPage } from "./pages/SettingsPage";
+
 import { OrderPage } from "./pages/OrderPage";
-import { EditMenuPage } from "./pages/EditMenuPage";
-import { EditUserPage } from "./pages/EditUserPage";
 import { OrderDetails } from "./pages/OrderDetails";
-import { MenuDetailsList } from "./pages/MenuDetailsList";
+
+import { MenuSettingPage } from "./pages/MenuSettingPage";
+import { ChooseMenuPage } from "./pages/ChooseMenuPage";
+import { EditMenuPage } from "./pages/EditMenuPage";
+import { AddMenuPage } from "./pages/AddMenuPage";
+
+import { EditUserPage } from "./pages/EditUserPage";
+
 import ScrollToTop from "./components/ScrollToTop";
 
 import RequireAuth from "../hooks/RequireAuth";
@@ -35,8 +41,10 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/order" element={<OrderPage />} />
           <Route path="/orderDetail/:id" element={<OrderDetails />} />
-          <Route path="/edit" element={<EditMenuPage />} />
-          <Route path="/editMenu" element={<MenuDetailsList />} />
+          <Route path="/menuSetting" element={<MenuSettingPage />} />
+          <Route path="/ChooseMenu" element={<ChooseMenuPage />} />
+          <Route path="/editMenu" element={<EditMenuPage />} />
+          <Route path="/addMenu" element={<AddMenuPage />} />
           <Route path="/editUser" element={<EditUserPage />} />
         </Routes>
       </BrowserRouter>

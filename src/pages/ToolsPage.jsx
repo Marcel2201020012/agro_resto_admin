@@ -41,14 +41,13 @@ export const ToolsPage = () => {
         <div className="container min-h-screen overflow-x-hidden overflow-y-hidden">
             <Background bg={bg} />
 
-
             <main className="flex items-center justify-center min-h-screen">
                 <div className="relative flex flex-col items-center justify-start gap-8 pt-4">
                     <div className="font-bold text-white text-center text-3xl">
                         <span>Select Tools</span>
                     </div>
 
-                    <div className="relative flex gap-8">
+                    <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title={"Order"} route={"/order"} />
                         <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} />
                         {role === "admin" && (

@@ -1,44 +1,85 @@
-import { EditMenuListBox } from "../components/EditMenuListBox";
-
-import mainDish from "../assets/edit_menu_img/main_dish.svg"
-import sideDish from "../assets/edit_menu_img/side_dish.svg"
-import drinks from "../assets/edit_menu_img/drinks.svg"
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { MenuListBox } from "../components/MenuListBox";
+import { addDoc, collection, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const EditMenuPage = () => {
     const navigate = useNavigate();
+    const [order, setOrder] = useState([]);
+    const location = useLocation();
+    const category = location.state;
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const unsub = onSnapshot(collection(db, "menu_makanan"), (snapshot) => {
+            const orderData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setOrder(orderData);
+            setIsLoading(false);
+        })
+
+        return () => unsub();
+    }, []);
+
+    const getOrderByCategory = (category) => {
+        return order
+            .filter(item => item.category === category && item.createdAt)
+            .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+    };
+
+    const orders = getOrderByCategory(category);
+
+    if (isSaving) {
+        return (
+            <div className="container min-h-screen flex justify-center items-center">
+                <p className="text-lg font-semibold">Saving new menu...</p>
+            </div>
+        )
+    }
+
+    if (!order.every(item => item.createdAt) || isLoading) {
+        return (
+            <div className="container min-h-screen flex justify-center items-center">
+                <p className="text-lg font-semibold">Loading Menu List...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container min-h-screen overflow-x-hidden">
-            <div
-                className="fixed inset-0 overflow-hidden pointer-events-none z-0 bg-cover bg-center bg-no-repeat bg-background"
-            ></div>
+            <div className="text-left mt-8 font-bold text-4xl">
+                {category} Menu List
+            </div>
 
-            <main>
-                <div className="relative text-left pt-8 pb-12">
-                    <div className="text-agro-color font-medium">AGRO RESTO</div>
-                    <div className="text-4xl font-bold">Edit Menu</div>
-                </div>
+            <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8">
+                {orders.length === 0 ? (
+                    <div className="text-left text-red-500">Menu is empty</div>
+                ) : (
+                    orders.map(order => (
+                        <MenuListBox
+                            key={order.id}
+                            id={order.id}
+                            img={order.image}
+                            name={order.name}
+                            cn={order.cn}
+                            desc={order.desc}
+                            price={order.price}
+                            stocks={order.stocks}
+                        />
+                    ))
+                )}
+            </div>
 
-                <div className="relative flex flex-col items-center justify-start gap-8 pt-8">
-                    <div className="flex gap-8 w-3/4 overflow-x-scroll scrollbar-hide">
-                        <EditMenuListBox img={mainDish} title={"Main Dish"} route={"/editMenu"} category={"Main Dish"}/>
-                        <EditMenuListBox img={sideDish} title={"Side Dish"} route={"/editMenu"} category={"Sides"}/>
-                        <EditMenuListBox img={drinks} title={"Coffee"} route={"/editMenu"} category={"Coffee"}/>
-                        <EditMenuListBox img={drinks} title={"Non-Coffee"} route={"/editMenu"} category={"Non-Coffee"}/>
-                        <EditMenuListBox img={drinks} title={"Juice"} route={"/editMenu"} category={"Juice"}/>
-                        <EditMenuListBox img={drinks} title={"Tea"} route={"/editMenu"} category={"Tea"}/>
-                        <EditMenuListBox img={drinks} title={"Soft Drink"} route={"/editMenu"} category={"Soft Drink"}/>
-                        <EditMenuListBox img={drinks} title={"Beer"} route={"/editMenu"} category={"Beer"}/>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate(-1)} className="bg-agro-color rounded-full px-6 py-2 w-45 absolute bottom-2 mb-10">
-                    <span className="text-white">
-                        Back
-                    </span>
-                </div>
-            </main>
+            <div onClick={() => navigate(-1)} className="bg-agro-color rounded-full px-6 py-2 w-45 mb-8">
+                <span className="text-white">
+                    Back
+                </span>
+            </div>
         </div>
     );
 }
