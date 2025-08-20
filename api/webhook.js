@@ -8,8 +8,8 @@ export default async function handler(req, res) {
   try {
     const coreApi = new midtransClient.CoreApi({
       isProduction: false,
-      serverKey: process.env.MIDTRANS_CLIENT_KEY_SANDBOX,
-      clientKey: process.env.MIDTRANS_SERVER_KEY_SANDBOX,
+      serverKey: process.env.MIDTRANS_SERVER_KEY_SANDBOX,
+      clientKey: process.env.MIDTRANS_CLIENT_KEY_SANDBOX,
     });
 
     const statusResponse = await coreApi.transaction.notification(req.body);
