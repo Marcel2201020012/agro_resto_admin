@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     const orderId = statusResponse.order_id;
     const transactionStatus = statusResponse.transaction_status;
 
-    if (transactionStatus === 'expire' || transactionStatus === 'cancel') {
+    if (transactionStatus === 'expire') {
       const orderRef = doc(db, 'orders', orderId);
       await updateDoc(orderRef, { status: 'Order Canceled' });
     }
