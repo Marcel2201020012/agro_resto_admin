@@ -1,20 +1,20 @@
-import { useNavigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./useAuth";
 
-export default function RequireAuth({ children }){
-  const {user, checking} = useAuth();
-  const navigate = useNavigate();
+export default function RequireAuth() {
+  const { user, checking } = useAuth();
 
   if (checking) {
-    return <div className="container min-h-screen flex justify-center items-center">
-                <p className="text-lg font-semibold">Loading...</p>
-            </div>;
+    return (
+      <div className="container min-h-screen flex justify-center items-center">
+        <p className="text-lg font-semibold">Loading...</p>
+      </div>
+    );
   }
 
-  if (!user){
-    navigate("/login");
-    return null;
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
 
-  return children;
-};
+  return <Outlet />;
+}

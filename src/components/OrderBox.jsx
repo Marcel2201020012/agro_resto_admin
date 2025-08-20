@@ -5,7 +5,7 @@ import { db } from "../../firebase/firebaseConfig";
 
 export const OrderBox = ({ id, date, status, customerName }) => {
     const navigate = useNavigate();
-    const [isCancelled, setIsCancelled] = useState(false);
+    const [isDeleteable, setIsCancelled] = useState(false);
 
     const formatDate = (timestamp) => {
         const d = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -24,7 +24,7 @@ export const OrderBox = ({ id, date, status, customerName }) => {
     };
 
     useEffect(() => {
-        setIsCancelled(status === "Order Canceled");
+        setIsCancelled(status === "Order Canceled" || status === "Order Finished");
     }, [status]);
 
     return (
@@ -43,7 +43,7 @@ export const OrderBox = ({ id, date, status, customerName }) => {
                 </div>
             </div>
 
-            {isCancelled && (
+            {isDeleteable && (
                 <button
                     onClick={handleDelete}
                     className="absolute top-2 right-2 text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded hover:bg-red-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"

@@ -33,19 +33,17 @@ function App() {
         <Routes>
           <Route index element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/tools" element={
-            <RequireAuth>
-              <ToolsPage />
-            </RequireAuth>
-          } />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/order" element={<OrderPage />} />
-          <Route path="/orderDetail/:id" element={<OrderDetails />} />
-          <Route path="/menuSetting" element={<MenuSettingPage />} />
-          <Route path="/ChooseMenu" element={<ChooseMenuPage />} />
-          <Route path="/editMenu" element={<EditMenuPage />} />
-          <Route path="/addMenu" element={<AddMenuPage />} />
-          <Route path="/editUser" element={<EditUserPage />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/tools" element={<ToolsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/order" element={<OrderPage />} />
+            <Route path="/orderDetail/:id" element={<OrderDetails />} />
+            <Route path="/menuSetting" element={<MenuSettingPage />} />
+            <Route path="/ChooseMenu" element={<ChooseMenuPage />} />
+            <Route path="/editMenu" element={<EditMenuPage />} />
+            <Route path="/addMenu" element={<AddMenuPage />} />
+            <Route path="/editUser" element={<EditUserPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </>
