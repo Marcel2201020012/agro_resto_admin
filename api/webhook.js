@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
+import { doc, updateDoc } from "firebase/firestore";
+
 export default async function handler(req, res) {
     const firebaseConfig = {
         apiKey: process.env.VITE_FIREBASE_API_KEY,
