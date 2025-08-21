@@ -6,6 +6,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { OrderPage } from "./pages/OrderPage";
 import { OrderDetails } from "./pages/OrderDetails";
 
+import { SalesPage } from "./pages/SalesPageV2";
 import { MenuSettingPage } from "./pages/MenuSettingPage";
 import { ChooseMenuPage } from "./pages/ChooseMenuPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
@@ -36,6 +37,7 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/tools" element={<ToolsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/sales" element={<SalesPage />} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/orderDetail/:id" element={<OrderDetails />} />
             <Route path="/menuSetting" element={<MenuSettingPage />} />

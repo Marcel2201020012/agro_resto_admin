@@ -49,7 +49,8 @@ export const ToolsPage = () => {
 
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title={"Order"} route={"/order"} />
-                        <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} />
+                        <ToolsBox img={salesImg} title={"Sales"} route={"/sales"} />
+                        {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
                         {role === "admin" && (
                             <ToolsBox img={settingImg} title={"Settings"} route={"/settings"} />
                         )}
