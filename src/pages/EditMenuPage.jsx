@@ -43,8 +43,13 @@ export const EditMenuPage = () => {
 
     return (
         <div className="container min-h-screen overflow-x-hidden">
-            <div className="text-left mt-8 font-bold text-4xl">
-                {category} Menu List
+            <div className="text-left pt-8">
+                <div className="text-agro-color font-medium">
+                    AGRO RESTO
+                </div>
+                <div className="text-4xl font-bold">
+                    {category} Menu List
+                </div>
             </div>
 
             <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8">

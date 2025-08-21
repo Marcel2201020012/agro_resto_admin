@@ -27,18 +27,26 @@ async function getUserRole() {
 export const SettingsPage = () => {
     const navigate = useNavigate();
     const [role, setRole] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         getUserRole().then((r) => {
-            if (r !== "admin") {
+            if (r === "user") {
                 navigate("/");
             } else {
                 setRole(r);
             }
+            setLoading(false);
         });
     }, [navigate]);
 
-    if (role !== "admin") return null;
+    if (role === "user") return null;
+
+    if (loading) {
+        return <div className="container min-h-screen flex justify-center items-center">
+            <p className="text-lg font-semibold">Loading...</p>
+        </div>
+    }
 
     return (
         <div className="container min-h-screen overflow-x-hidden overflow-y-hidden">
@@ -52,7 +60,9 @@ export const SettingsPage = () => {
                     </div>
 
                     <div className="relative flex gap-8 p-4">
-                        <ToolsBox img={userImg} title={"Users"} route={"/editUser"} />
+                        {role === "super admin" &&
+                            <ToolsBox img={userImg} title={"Users"} route={"/userSettings"} />
+                        }
                         <ToolsBox img={menuImg} title={"Menu Settings"} route={"/menuSetting"} />
                     </div>
                 </div>

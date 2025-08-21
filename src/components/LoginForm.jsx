@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { auth } from "../../firebase/firebaseConfig";
+import { auth, db } from "../../firebase/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 export const LoginForm = () => {
     const navigate = useNavigate();
+    const [isLogin, setIsLogin] = useState(false);
 
     const [showPassword, setShowPassword] = useState(false);
 
@@ -26,21 +28,38 @@ export const LoginForm = () => {
     };
 
     const handleSubmit = async (e) => {
+        setIsLogin(true);
         e.preventDefault();
         setError(null);
 
-        if (formData.email && formData.password) {
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-                const user = userCredential.user;
-                console.log("signed in: ", user);
-                navigate("/tools");
-            } catch (error) {
-                console.error("Login error: ", error);
-                setError(error.message);
+        const { email, password } = formData;
+
+        if (!email || !password) {
+            setError("Please enter email and password");
+            setIsLogin(false);
+            return;
+        }
+
+        try {
+            const q = query(collection(db, "admin_accounts"), where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                setError("This account has been deleted or does not exist.");
+                setIsLogin(false);
+                return;
             }
-        } else {
-            setError("Please enter email and password")
+
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            console.log("signed in: ", user);
+
+            navigate("/tools");
+        } catch (error) {
+            console.error("Login error: ", error);
+            setError(error.message);
+        } finally {
+            setIsLogin(false);
         }
     };
 
@@ -89,7 +108,7 @@ export const LoginForm = () => {
                             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
                             tabIndex={-1}
                         >
-                            {showPassword ? <Eye/> : <EyeOff/>}
+                            {showPassword ? <Eye /> : <EyeOff />}
                         </button>
                     </div>
 
@@ -97,8 +116,9 @@ export const LoginForm = () => {
                         type="submit"
                         className="mt-2 rounded bg-white text-black font-semibold py-2 w-1/4"
                         onClick={handleSubmit}
+                        disabled={isLogin}
                     >
-                        Login
+                        {!isLogin ? <span>Login</span> : <span>Loading...</span>}
                     </button>
                     {error && <p className="text-red-500">{error}</p>}
                 </form>

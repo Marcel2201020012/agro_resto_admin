@@ -28,14 +28,27 @@ async function getUserRole() {
 
 export const ToolsPage = () => {
     const [role, setRole] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const logout = async () => {
         await signOut(auth);
     }
 
     useEffect(() => {
-        getUserRole().then(setRole);
+        const fetchRole = async () => {
+            const userRole = await getUserRole();
+            setRole(userRole);
+            setLoading(false);
+        };
+
+        fetchRole();
     }, []);
+
+    if (loading) {
+        return <div className="container min-h-screen flex justify-center items-center">
+            <p className="text-lg font-semibold">Loading...</p>
+        </div>
+    }
 
     return (
         <div className="container min-h-screen overflow-x-hidden overflow-y-hidden">
@@ -51,7 +64,7 @@ export const ToolsPage = () => {
                         <ToolsBox img={orderImg} title={"Order"} route={"/order"} />
                         <ToolsBox img={salesImg} title={"Sales"} route={"/sales"} />
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
-                        {role === "admin" && (
+                        {role !== "user" && (
                             <ToolsBox img={settingImg} title={"Settings"} route={"/settings"} />
                         )}
                     </div>

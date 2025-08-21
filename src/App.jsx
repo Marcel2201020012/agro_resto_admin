@@ -7,12 +7,15 @@ import { OrderPage } from "./pages/OrderPage";
 import { OrderDetails } from "./pages/OrderDetails";
 
 import { SalesPage } from "./pages/SalesPageV2";
+
 import { MenuSettingPage } from "./pages/MenuSettingPage";
 import { ChooseMenuPage } from "./pages/ChooseMenuPage";
 import { EditMenuPage } from "./pages/EditMenuPage";
 import { AddMenuPage } from "./pages/AddMenuPage";
 
-import { EditUserPage } from "./pages/EditUserPage";
+import { UserSettingsPage } from "./pages/UsersSettingPage";
+import { AddUsersPage } from "./pages/addUsersPage";
+import { EditUsersPage } from "./pages/EditUsersPage";
 
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -35,16 +38,21 @@ function App() {
           <Route index element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route element={<RequireAuth />}>
+
             <Route path="/tools" element={<ToolsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/sales" element={<SalesPage />} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/orderDetail/:id" element={<OrderDetails />} />
+
+            <Route path="/userSettings" element={<UserSettingsPage />} />
+            <Route path="/addUsers" element={<AddUsersPage />} />
+            <Route path="/editUsers" element={<EditUsersPage />} />
+            
             <Route path="/menuSetting" element={<MenuSettingPage />} />
             <Route path="/ChooseMenu" element={<ChooseMenuPage />} />
             <Route path="/editMenu" element={<EditMenuPage />} />
             <Route path="/addMenu" element={<AddMenuPage />} />
-            <Route path="/editUser" element={<EditUserPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
