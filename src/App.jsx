@@ -14,7 +14,7 @@ import { EditMenuPage } from "./pages/EditMenuPage";
 import { AddMenuPage } from "./pages/AddMenuPage";
 
 import { UserSettingsPage } from "./pages/UsersSettingPage";
-import { AddUsersPage } from "./pages/addUsersPage";
+import { AddUsersPage } from "./pages/AddUsersPage";
 import { EditUsersPage } from "./pages/EditUsersPage";
 
 import ScrollToTop from "./components/ScrollToTop";

@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { ToolsBox } from "../components/ToolsBox";
 
 import menuImg from "../assets/tools_img/menuImg.svg"
