@@ -1,4 +1,4 @@
-import { doc, collection, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, collection, updateDoc, onSnapshot, increment } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db } from "../../firebase/firebaseConfig";
@@ -27,6 +27,34 @@ export const OrderDetails = () => {
         return `${month}/${day}/${year} ${hour}:${minute}`;
     };
 
+    const updateStock = async (details) => {
+        if (!details?.orderDetails) return;
+
+        const batchUpdates = details.orderDetails.map(async (item) => {
+            try {
+                const menuRef = doc(db, "menu_makanan", item.id);
+                await updateDoc(menuRef, { stocks: increment(-item.jumlah) });
+            } catch (err) {
+                console.error(`Failed to update stock for ${item.id}:`, err);
+            }
+        });
+
+        await Promise.all(batchUpdates);
+    };
+
+    const updateMenuSolds = async (orderDetails) => {
+        if (!Array.isArray(orderDetails)) return;
+
+        const updates = orderDetails.map(async (item) => {
+            const menuRef = doc(db, "menu_makanan", item.id);
+            await updateDoc(menuRef, {
+                solds: increment(item.jumlah),
+            });
+        });
+
+        await Promise.all(updates);
+    }
+
     useEffect(() => {
         const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
             const orderData = snapshot.docs.map((doc) => ({
@@ -43,7 +71,9 @@ export const OrderDetails = () => {
         if (!id) return;
 
         if (modalAction === 'confirm') {
-            updateStatus(id, "Confirmed", result.tableId);
+            updateStatus(id, "Preparing Food", result.tableId);
+            updateStock(result);
+            updateMenuSolds(result.orderDetails);
 
         } else if (modalAction === 'cancel') {
             updateStatus(id, "Order Canceled", result.tableId);
