@@ -79,7 +79,7 @@ export const OrderDetails = () => {
                     paymentUrl: "Pay With Cash"
                 });
 
-                window.open(`https://agro-resto-client.vercel.app/confirm?orderId=${id}&tableId=${tableId}&transaction_status=settlement`);
+                window.open(`https://client.fbagrohotel.com/confirm?orderId=${id}&tableId=${tableId}&transaction_status=settlement`);
             } else {
                 await updateDoc(orderRef, {
                     status: statusValue,
