@@ -75,15 +75,15 @@ export const OrderDetails = () => {
         try {
             const orderRef = doc(db, "transaction_id", id);
             if (statusValue === "") {
-                await updateDoc(orderRef, {
-                    paymentUrl: "Pay With Cash"
-                });
+                // await updateDoc(orderRef, {
+                //     paymentUrl: "Pay With Cash"
+                // });
 
-                window.open(`https://client.fbagrohotel.com/confirm?orderId=${id}&tableId=${tableId}&transaction_status=settlement`);
+                // window.open(`https://client.fbagrohotel.com/confirm?orderId=${id}&tableId=${tableId}&transaction_status=settlement`);
             } else {
                 await updateDoc(orderRef, {
                     status: statusValue,
-                    paymentUrl: ""
+                    // paymentUrl: ""
                 });
             }
         } catch (error) {
@@ -136,12 +136,12 @@ export const OrderDetails = () => {
                         <div>{result.tableId}</div>
                     </div>
 
-                    {/* <div>
+                    <div>
                         <div className="font-bold">Payment Methode</div>
                         <div>{result.payment}</div>
-                    </div> */}
+                    </div>
 
-                    <div>
+                    {/* <div>
                         <div className="font-bold">Payment URL</div>
                         <a
                             href={result?.paymentUrl}
@@ -151,7 +151,7 @@ export const OrderDetails = () => {
                         >
                             {result?.paymentUrl}
                         </a>
-                    </div>
+                    </div> */}
 
                     <div>
                         <div className="font-bold">Notes</div>
