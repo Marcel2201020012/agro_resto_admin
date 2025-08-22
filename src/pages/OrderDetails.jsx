@@ -226,20 +226,20 @@ export const OrderDetails = () => {
                         </div>
                     ))}
                     <div className="flex justify-between items-center">
-                            <span className="font-bold">Service 10%</span>
-                            <span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                            }).format(Number(result.total * 0.1))}</span>
+                        <span className="font-bold">Service 10%</span>
+                        <span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(Number(result.total * 0.1))}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                            <span className="font-bold">Tax 10%</span>
-                            <span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                            }).format(Number(result.total * 0.1))}</span>
+                        <span className="font-bold">Tax 10%</span>
+                        <span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(Number(result.total * 0.1))}</span>
                     </div>
                 </div>
 
@@ -279,7 +279,7 @@ export const OrderDetails = () => {
                     </button>
                 )}
 
-                {result.status === "Preparing Food" && (
+                {(result.status === "Preparing Food" || result.status === "Order Finished") && (
                     <button onClick={handleFinishOrder} className="bg-green-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Finish Order</span>
                     </button>
