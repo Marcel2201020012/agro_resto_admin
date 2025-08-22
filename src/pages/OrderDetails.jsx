@@ -249,7 +249,7 @@ export const OrderDetails = () => {
                     </button>
                 )}
 
-                {result.status === "Preparing Food" || result.status === "Confirmed" && (
+                {result.status === "Preparing Food" && (
                     <button onClick={handleFinishOrder} className="bg-green-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Finish Order</span>
                     </button>
