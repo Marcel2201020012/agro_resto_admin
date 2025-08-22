@@ -1,7 +1,9 @@
 import { doc, collection, updateDoc, onSnapshot, increment } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db } from "../../firebase/firebaseConfig";
+import { useReactToPrint } from "react-to-print";
+import { Reprint } from "../components/Reprint";
 
 export const OrderDetails = () => {
     const navigate = useNavigate();
@@ -12,6 +14,12 @@ export const OrderDetails = () => {
 
     const { id } = useParams();
     const result = order.find((p) => p.id.toString() === id);
+
+    const receiptRef = useRef();
+    const handlePrint = useReactToPrint({
+        content: () => receiptRef.current,
+        documentTitle: `Receipt-${id}`,
+    });
 
     const formatDate = (timestamp) => {
         const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -217,16 +225,32 @@ export const OrderDetails = () => {
                             }
                         </div>
                     ))}
+                    <div className="flex justify-between items-center">
+                            <span className="font-bold">Service 10%</span>
+                            <span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0
+                            }).format(Number(result.total * 0.1))}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                            <span className="font-bold">Tax 10%</span>
+                            <span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0
+                            }).format(Number(result.total * 0.1))}</span>
+                    </div>
                 </div>
 
                 <div className="flex justify-between mt-4 border-t pt-2">
-                    <p className="font-semibold">Total</p>
-                    <p className="text-green-700 font-semibold">
+                    <p className="font-bold">Total</p>
+                    <p className="text-green-700 font-bold">
                         {new Intl.NumberFormat('id-ID', {
                             style: 'currency',
                             currency: 'IDR',
                             minimumFractionDigits: 0
-                        }).format(Number(result.total))}
+                        }).format(Number(result.total + 2 * result.total * 0.1))}
                     </p>
                 </div>
             </div>
@@ -246,6 +270,12 @@ export const OrderDetails = () => {
                 {result.status === "Waiting For Payment On Cashier" && (
                     <button onClick={handleConfirmPayment} className="bg-yellow-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Confirm Payment</span>
+                    </button>
+                )}
+
+                {result.status === "Preparing Food" && (
+                    <button onClick={handlePrint} className="bg-blue-500 rounded-full text-white px-6 py-2 w-45">
+                        Print
                     </button>
                 )}
 
@@ -282,6 +312,10 @@ export const OrderDetails = () => {
                     </div>
                 </div>
             )}
+
+            <div style={{ display: "none" }}>
+                <Reprint ref={receiptRef} id={id} result={result} />
+            </div>
         </div>
     );
 }
