@@ -11,15 +11,31 @@ export const OrderDetails = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [modalAction, setModalAction] = useState(null);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     const { id } = useParams();
     const result = order.find((p) => p.id.toString() === id);
 
     const receiptRef = useRef();
-    const handlePrint = useReactToPrint({
-        content: () => receiptRef.current,
-        documentTitle: `Receipt-${id}`,
+    const printFn = useReactToPrint({
+        contentRef: receiptRef,
+        documentTitle: `Receipt_${id}`,
+        pageStyle: `
+            @page { size: auto; margin: 0mm; }
+            @media print {
+                body {
+                    width: 58mm;
+                    margin: 0 auto;
+                }
+            }
+        `,
+        onAfterPrint: () => setIsPrinting(false),
     });
+
+    const handlePrint = () => {
+        setIsPrinting(true);
+        printFn?.();
+    };
 
     const formatDate = (timestamp) => {
         const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -273,49 +289,51 @@ export const OrderDetails = () => {
                     </button>
                 )}
 
-                {result.status === "Preparing Food" && (
-                    <button onClick={handlePrint} className="bg-blue-500 rounded-full text-white px-6 py-2 w-45">
-                        Print
+                {(result.status === "Preparing Food" || result.status === "Order Finished") && (
+                    <button onClick={handlePrint} disabled={isPrinting} className="bg-blue-500 rounded-full text-white px-6 py-2 w-45">
+                        {isPrinting ? 'Printing…' : 'Print'}
                     </button>
                 )}
-
-                {(result.status === "Preparing Food" || result.status === "Order Finished") && (
+                {result.status === "Preparing Food" && (
                     <button onClick={handleFinishOrder} className="bg-green-500 rounded-full text-white px-6 py-2 w-45">
-                        <span>Finish Order</span>
+                        Finish
                     </button>
                 )}
             </div>
 
-            {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                    <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
-                        <h2 className="text-lg font-bold mb-4">Attention</h2>
-                        <p>
-                            {modalAction === 'confirm' && "Confirm payment?"}
-                            {modalAction === 'cancel' && "Cancel this order?"}
-                            {modalAction === 'finish' && "Mark this order as finished?"}
-                        </p>
-                        <div className="mt-6 flex justify-center gap-4">
-                            <button
-                                onClick={handleYes}
-                                className="bg-green-500 text-white px-4 py-2 rounded"
-                            >
-                                Yes
-                            </button>
-                            <button
-                                onClick={() => { setShowModal(false); setModalAction(null); }}
-                                className="bg-red-500 text-white px-4 py-2 rounded"
-                            >
-                                No
-                            </button>
+            {
+                showModal && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                        <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
+                            <h2 className="text-lg font-bold mb-4">Attention</h2>
+                            <p>
+                                {modalAction === 'confirm' && "Confirm payment?"}
+                                {modalAction === 'cancel' && "Cancel this order?"}
+                                {modalAction === 'finish' && "Mark this order as finished?"}
+                            </p>
+                            <div className="mt-6 flex justify-center gap-4">
+                                <button
+                                    onClick={handleYes}
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                >
+                                    Yes
+                                </button>
+                                <button
+                                    onClick={() => { setShowModal(false); setModalAction(null); }}
+                                    className="bg-red-500 text-white px-4 py-2 rounded"
+                                >
+                                    No
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            <div style={{ display: "none" }}>
-                <Reprint ref={receiptRef} id={id} result={result} />
+            <div style={{ position: "absolute", left: "-9999px" }}>
+                {result ? <Reprint ref={receiptRef} id={id} result={result} /> : ""}
             </div>
-        </div>
+
+        </div >
     );
 }
