@@ -10,8 +10,13 @@ export const OrderDetails = () => {
     const [order, setOrder] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showCashPayment, setShowCashPayment] = useState(false);
     const [modalAction, setModalAction] = useState(null);
     const [isPrinting, setIsPrinting] = useState(false);
+
+    const [cashValue, setCashValue] = useState();
+    const [isSavingCashValue, setIsSavingCashValue] = useState(false);
+    const [cashValueError, setCashValueError] = useState("");
 
     const { id } = useParams();
     const result = order.find((p) => p.id.toString() === id);
@@ -91,6 +96,15 @@ export const OrderDetails = () => {
         return () => unsub();
     }, []);
 
+    const validateCashValue = (valueToCheck) => {
+        if (isNaN(valueToCheck) || Number(valueToCheck) <= 0 || Number(valueToCheck) < Number(result.total + 2 * result.total * 0.1)) {
+            setCashValueError("Please enter a valid cash value.");
+            return false;
+        }
+        setCashValueError("");
+        return true;
+    };
+
     const handleYes = () => {
         if (!id) return;
 
@@ -109,9 +123,28 @@ export const OrderDetails = () => {
         setModalAction(null);
     };
 
+    const handleSubmit = async () => {
+        if (!validateCashValue(cashValue)) return;
+
+        setIsSavingCashValue(true);
+        const transactionRef = doc(db, "transaction_id", id);
+        await updateDoc(transactionRef, {
+            cash: cashValue,
+        });
+        updateStatus(id, "Preparing Food", result.tableId);
+        updateStock(result);
+        updateMenuSolds(result.orderDetails);
+
+        setShowCashPayment(false);
+    }
+
     const handleConfirmPayment = () => {
-        setModalAction('confirm');
-        setShowModal(true);
+        if (result.payment !== "Cash") {
+            setModalAction('confirm');
+            setShowModal(true);
+        } else {
+            setShowCashPayment(true);
+        }
     };
 
     const handleCancelOrder = () => {
@@ -163,7 +196,7 @@ export const OrderDetails = () => {
             </div>
 
             <div className="border p-4 text-sm text-left rounded-xl bg-gray-50 mb-10">
-                <div className="grid gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                     <div>
                         <div className="font-bold">Transcation ID</div>
@@ -249,6 +282,7 @@ export const OrderDetails = () => {
                             minimumFractionDigits: 0
                         }).format(Number(result.total * 0.1))}</span>
                     </div>
+
                     <div className="flex justify-between items-center">
                         <span className="font-bold">Tax 10%</span>
                         <span className="font-bold">{new Intl.NumberFormat('id-ID', {
@@ -257,6 +291,31 @@ export const OrderDetails = () => {
                             minimumFractionDigits: 0
                         }).format(Number(result.total * 0.1))}</span>
                     </div>
+
+                    {result.status === "Preparing Food" && (<div className="flex justify-between items-center">
+                        <span className="font-bold">{result.payment}</span>
+                        {result.cash ? (<span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(Number(result.cash))}</span>) : (<span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(Number(result.total + 2 * result.total * 0.1))}</span>)}
+                    </div>)}
+
+                    {result.cash > result.total + 2 * result.total * 0.1 && (
+                        <div className="flex justify-between items-center">
+                            <span className="font-bold">Change</span>
+                            <span className="font-bold">{new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0
+                            }).format(Number(result.cash - (result.total + 2 * result.total * 0.1)))}</span>
+                        </div>
+                    )}
+
                 </div>
 
                 <div className="flex justify-between mt-4 border-t pt-2">
@@ -330,8 +389,42 @@ export const OrderDetails = () => {
                 )
             }
 
+            {
+                showCashPayment && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                        <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
+                            <h2 className="text-lg font-bold mb-4">Cash Payment</h2>
+                            <span>Rp</span>
+                            <input
+                                className="border border-gray-500 rounded-sm min-w-100"
+                                placeholder="Please input the payment value"
+                                onChange={(e) => setCashValue(e.target.value)}
+                            />
+                            {cashValueError && (
+                                <p className="text-red-500 mt-1 text-sm">{cashValueError}</p>
+                            )}
+                            <div className="mt-6 flex justify-center gap-4">
+                                {!isSavingCashValue ? (<><button
+                                    onClick={handleSubmit}
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                >
+                                    Submit
+                                </button>
+                                    <button
+                                        onClick={() => { setShowCashPayment(false) }}
+                                        className="bg-red-500 text-white px-4 py-2 rounded"
+                                    >
+                                        Cancel
+                                    </button></>) : (<span>Loading...</span>)}
+
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
             <div style={{ position: "absolute", left: "-9999px" }}>
-                {result ? <Reprint ref={receiptRef} id={id} result={result} /> : ""}
+                {result ? <Reprint ref={receiptRef} id={id} result={result} cashValue={cashValue} /> : ""}
             </div>
 
         </div >

@@ -13,7 +13,7 @@ const formatDate = (timestamp) => {
     return `${month}/${day}/${year}`;
 };
 
-export const Reprint = forwardRef(({ id, result }, ref) => {
+export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
     const { user, checking } = useAuth();
 
     return (
@@ -89,6 +89,34 @@ export const Reprint = forwardRef(({ id, result }, ref) => {
                     </span>
                 </div>
             </div>
+
+            <div className="flex justify-between">
+                <div className="flex w-full font-bold">
+                    <span className="flex-1 text-left">{result.payment}</span>
+                    <span className="w-4 text-center">:</span>
+                    {result.cash ? (<span className="flex-1 text-right">
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
+                            .format(Number(cashValue))}
+                    </span>) : (<span className="flex-1 text-right">
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
+                            .format(Number(result.total + 2 * result.total * 0.1))}
+                    </span>)}
+
+                </div>
+            </div>
+
+            {result.cash > result.total + 2 * result.total * 0.1 &&
+                <div className="flex justify-between">
+                    <div className="flex w-full font-bold">
+                        <span className="flex-1 text-left">Change</span>
+                        <span className="w-4 text-center">:</span>
+                        <span className="flex-1 text-right">
+                            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
+                                .format(Number(result.cash - (result.total + 2 * result.total * 0.1)))}
+                        </span>
+                    </div>
+                </div>
+            }
 
             <div className="font-bold mt-4 text-center">THANK YOU</div>
             <div className="text-left">Waiter&nbsp;: {user?.email ? user.email.split("@")[0] : "staff"} </div>
