@@ -67,6 +67,7 @@ export const EditMenuPage = () => {
                             price={order.price}
                             promotion={order.promotion}
                             stocks={order.stocks}
+                            solds={order.solds}
                         />
                     ))
                 )}

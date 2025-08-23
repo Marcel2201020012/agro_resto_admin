@@ -3,8 +3,8 @@ import { useState } from "react";
 import { doc, updateDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
-export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks }) => {
-    const originalValues = { img, name, desc, cn, price, promotion, stocks };
+export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks, solds }) => {
+    const originalValues = { img, name, desc, cn, price, promotion, stocks, solds };
 
     const [tempImg, setTempImg] = useState(img);
     const [tempName, setTempName] = useState(name);
@@ -13,6 +13,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
     const [tempPrice, setTempPrice] = useState(price);
     const [tempPromotionPrice, setTempPromotionPrice] = useState(promotion);
     const [tempStocks, setTempStocks] = useState(stocks);
+    const [tempSolds, setTempSolds] = useState(solds);
 
     const [foodImgError, setFoodImgError] = useState("");
     const [foodNameError, setFoodNameError] = useState("");
@@ -21,6 +22,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
     const [foodPriceError, setFoodPriceError] = useState("");
     const [promotionPriceError, setPromotionPriceError] = useState();
     const [foodStocksError, setFoodStocksError] = useState();
+    const [soldsError, setSoldsError] = useState();
 
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -135,6 +137,22 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
         return true;
     };
 
+    const validateSolds = (soldsToCheck) => {
+        const num = Number(soldsToCheck);
+
+        if (soldsToCheck === "" || isNaN(num)) {
+            setSoldsError("Please enter valid solds value.");
+            return false;
+        }
+        if (num < 0) {
+            setSoldsError("Please enter a valid positive number.");
+            return false;
+        }
+
+        setSoldsError("");
+        return true;
+    };
+
     const handleEditToggle = () => {
         if (!isEditing) {
             setTempImg("");
@@ -144,6 +162,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
             setTempPrice("");
             setTempPromotionPrice("");
             setTempStocks("");
+            setTempSolds("");
         }
         setIsEditing(!isEditing);
     };
@@ -156,8 +175,9 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
         if (field === "chinese" && !tempCn) setTempCn(originalValues.cn);
         if (field === "desc" && !tempDesc) setTempDesc(originalValues.desc);
         if (field === "price" && !tempPrice) setTempPrice(originalValues.price);
-        if (field === "promotion" && !tempPromotionPrice) setTempPrice(originalValues.promotion);
+        if (field === "promotion" && !tempPromotionPrice) setTempPromotionPrice(originalValues.promotion);
         if (field === "stocks" && !tempStocks) setTempStocks(originalValues.stocks);
+        if (field === "solds" && !tempSolds) setTempSolds(originalValues.solds);
 
         if (field === "img" && tempImg) validateFoodImg(tempImg);
         if (field === "name" && tempName) validateFoodName(tempName);
@@ -166,6 +186,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
         if (field === "price" && tempPrice) validateFoodPrice(tempPrice);
         if (field === "promotion" && tempPromotionPrice) validatePromotionPrice(tempPromotionPrice, price);
         if (field === "stocks" && tempStocks) validateFoodStock(tempStocks);
+        if (field === "solds" && tempSolds) validateSolds(tempSolds);
     };
 
     const handleSave = async () => {
@@ -175,8 +196,9 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
             cn: tempCn.trim() === "" ? originalValues.cn : tempCn,
             desc: tempDesc.trim() === "" ? originalValues.desc : tempDesc,
             price: tempPrice.trim() === "" ? originalValues.price : tempPrice,
-            promotion: tempPromotionPrice.trim() === "" ? originalValues.promotion : Number(tempPromotionPrice),
+            promotion: tempPromotionPrice === "" ? originalValues.promotion : Number(tempPromotionPrice),
             stocks: tempStocks === "" ? originalValues.stocks : Number(tempStocks),
+            solds: tempSolds === "" ? originalValues.solds : Number(tempSolds),
         };
 
         if (
@@ -186,7 +208,8 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
             !validateFoodDesc(updatedValues.desc) ||
             !validateFoodPrice(updatedValues.price) ||
             !validatePromotionPrice(updatedValues.promotion, price) ||
-            !validateFoodStock(updatedValues.stocks)
+            !validateFoodStock(updatedValues.stocks) ||
+            !validateSolds(updatedValues.solds)
         ) {
             return;
         }
@@ -200,6 +223,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
         setTempPrice(updatedValues.price);
         setTempPromotionPrice(updatedValues.promotion);
         setTempStocks(updatedValues.stocks);
+        setTempSolds(updatedValues.solds);
 
         await updateDoc(doc(db, "menu_makanan", id), updatedValues);
 
@@ -209,6 +233,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
         originalValues.price = updatedValues.price;
         originalValues.promotion = updatedValues.promotion;
         originalValues.stocks = updatedValues.stocks;
+        originalValues.solds = updatedValues.solds;
 
         setTempImg(updatedValues.image);
         setTempName(updatedValues.name);
@@ -216,6 +241,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
         setTempPrice(updatedValues.price);
         setTempPromotionPrice(updatedValues.promotion);
         setTempStocks(updatedValues.stocks);
+        setTempSolds(updatedValues.solds);
 
         setIsSaving(false);
         setIsEditing(false);
@@ -352,6 +378,23 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks 
                         />
                         {foodStocksError && (
                             <p className="text-red-500 mt-1 text-sm">{foodStocksError}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-left font-medium text-gray-700">Solds</label>
+                        <input
+                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                }`}
+                            type="text"
+                            value={tempSolds}
+                            placeholder="Input Solds"
+                            onChange={(e) => setTempSolds(e.target.value)}
+                            onBlur={() => handleBlur("solds")}
+                            readOnly={!isEditing}
+                        />
+                        {soldsError && (
+                            <p className="text-red-500 mt-1 text-sm">{soldsError}</p>
                         )}
                     </div>
                 </div>
