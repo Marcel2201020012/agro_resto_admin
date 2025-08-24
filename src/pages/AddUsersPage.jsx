@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { auth, db } from "../../firebase/firebaseConfig";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 export const AddUsersPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+
+  const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
 
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -27,6 +30,31 @@ export const AddUsersPage = () => {
     return true;
   };
 
+  const validateUsername = async (username) => {
+    if (!username || username.trim().length < 3) {
+      setUsernameError("Username must be at least 3 characters long");
+      return false;
+    }
+
+    const usernameToCheck = username.trim().toLowerCase();
+    console.log({usernameToCheck});
+
+    try {
+      const q = query(collection(db, "admin_accounts"), where("username", "==", usernameToCheck));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        setUsernameError("Username already exists");
+        return false;
+      }
+      setUsernameError("");
+      return true;
+    } catch (error) {
+      setUsernameError("Error checking account data");
+      return false;
+    }
+  }
+
   const validatePassword = (password) => {
     if (!password || password.trim().length < 6) {
       setPasswordError("Password must be at least 6 characters long");
@@ -40,10 +68,16 @@ export const AddUsersPage = () => {
   const handleCreateUser = async () => {
     setLoading(true);
 
-    if (!validateEmail(email) || !validatePassword(password)) {
+    //in Js, async functio always return Promise not Value, so we need await
+    const isEmailValid = validateEmail(email);
+    const isUsernameValid = await validateUsername(username); // await here
+    const isPasswordValid = validatePassword(password);
+
+    if (!isEmailValid || !isUsernameValid || !isPasswordValid) {
       setLoading(false);
       return;
     }
+
 
     try {
       const adminEmail = auth.currentUser.email;
@@ -64,10 +98,13 @@ export const AddUsersPage = () => {
       //so we need to sign back in with the correct email.
       await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
 
+      const usernameToLowerCase = username.trim().toLowerCase();
+
       await updateProfile(newUser, { displayName: role });
       console.log(adminEmail);
       await setDoc(doc(db, "admin_accounts", newUser.uid), {
         email,
+        username: usernameToLowerCase,
         role,
         createdAt: new Date(),
       });
@@ -76,6 +113,7 @@ export const AddUsersPage = () => {
 
       setEmail("");
       setPassword("");
+      setUsername("");
       setRole("user");
     } catch (error) {
       console.error("Error creating user:", error);
@@ -111,6 +149,20 @@ export const AddUsersPage = () => {
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               {emailError && <p className="text-red-500 mt-1 text-sm">{emailError}</p>}
+            </div>
+
+            <div>
+              <label className="block text-left text-sm font-medium text-gray-600 mb-1">
+                Username
+              </label>
+              <input
+                type="username"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              {usernameError && <p className="text-red-500 mt-1 text-sm">{usernameError}</p>}
             </div>
 
             <div>

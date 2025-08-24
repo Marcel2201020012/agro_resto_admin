@@ -16,7 +16,7 @@ export const LoginForm = () => {
     };
 
     const [formData, setFormData] = useState({
-        email: "",
+        identifier: "",
         password: "",
     });
 
@@ -28,21 +28,37 @@ export const LoginForm = () => {
     };
 
     const handleSubmit = async (e) => {
-        setIsLogin(true);
         e.preventDefault();
+        setIsLogin(true);
         setError(null);
 
-        const { email, password } = formData;
+        const { identifier, password } = formData;
 
-        if (!email || !password) {
-            setError("Please enter email and password");
+        if (!identifier || !password) {
+            setError("Please enter email/username and password");
             setIsLogin(false);
             return;
         }
 
         try {
-            const q = query(collection(db, "admin_accounts"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
+            let email = identifier;
+
+            const emailRegex = /\S+@\S+\.\S+/;
+            if (!emailRegex.test(identifier)) {
+                const q = query(collection(db, "admin_accounts"), where("username", "==", identifier));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    setError("This account has been deleted or does not exist.");
+                    setIsLogin(false);
+                    return;
+                }
+
+                email = snapshot.docs[0].data().email;
+            }
+
+            const q2 = query(collection(db, "admin_accounts"), where("email", "==", email));
+            const querySnapshot = await getDocs(q2);
 
             if (querySnapshot.empty) {
                 setError("This account has been deleted or does not exist.");
@@ -82,11 +98,11 @@ export const LoginForm = () => {
                     <input
                         type="text"
                         id="email"
-                        name="email"
+                        name="identifier"
                         required
                         className="w-full p-1 rounded bg-white text-black"
                         placeholder="Please enter your Email"
-                        value={formData.email}
+                        value={formData.identifier}
                         onChange={handleChange}
                     />
 

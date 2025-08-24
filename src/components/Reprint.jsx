@@ -14,7 +14,7 @@ const formatDate = (timestamp) => {
 };
 
 export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
-    const { user, checking } = useAuth();
+    const { user, userData,checking } = useAuth();
 
     return (
         <div ref={ref} className="p-2 text-xs" style={{ width: "58mm" }}>
@@ -119,7 +119,7 @@ export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
             }
 
             <div className="font-bold mt-4 text-center">THANK YOU</div>
-            <div className="text-left">Waiter&nbsp;: {user?.email ? user.email.split("@")[0] : "staff"} </div>
+            <div className="text-left">Waiter&nbsp;: {userData?.username} </div>
         </div>
     );
 });

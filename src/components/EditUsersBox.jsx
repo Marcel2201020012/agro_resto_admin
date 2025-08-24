@@ -2,35 +2,31 @@ import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebaseConfig";
-import { sendPasswordResetEmail } from "firebase/auth";
 
-export const EditUsersBox = ({ uid, email, role }) => {
-    const originalValues = { email, role };
+export const EditUsersBox = ({ uid, username, role }) => {
+    const originalValues = { username, role };
 
-    const [tempEmail, setTempEmail] = useState(email);
+    const [tempUsername, setTempUsername] = useState(username);
     const [tempRole, setTempRole] = useState(role);
 
-    const [tempEmailError, setTempEmailError] = useState("");
+    const [tempUsernameError, setTempUsernameError] = useState("");
 
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!email || !emailRegex.test(email)) {
-            setTempEmailError("Please enter a valid email address");
+    const validateUsername = (username) => {
+        if (!username || username.trim().length < 3) {
+            setTempUsernameError("Username must be atleset 3 characters long.");
             return false;
         }
-        setTempEmailError("");
+        setTempUsernameError("");
         return true;
     };
 
     const handleEditToggle = () => {
         if (!isEditing) {
-            setTempEmail("");
-            setTempPassword("");
+            setTempUsername("");
             setTempRole("user");
         }
         setIsEditing(!isEditing);
@@ -39,33 +35,35 @@ export const EditUsersBox = ({ uid, email, role }) => {
     const handleBlur = (field) => {
         if (!isEditing) return;
 
-        if (field === "email" && !tempEmail) setTempEmail(originalValues.email);
+        if (field === "username" && !tempUsername) setTempUsername(originalValues.username);
+        if (field === "username" && tempUsername) validateUsername(tempUsername);
 
-        if (field === "email" && tempEmail) validateEmail(tempEmail);
+        if (field === "role" && !tempRole) setTempRole(originalValues.role);
+        if (field === "role" && tempRole) validateUsername(tempRole);
     };
 
     const handleSave = async () => {
         const updatedValues = {
-            email: tempEmail.trim() === "" ? originalValues.email : tempEmail,
+            username: tempUsername.trim() === "" ? originalValues.username : tempUsername,
             role: tempRole,
         };
 
         if (
-            !validateEmail(updatedValues.email)
+            !validateUsername(updatedValues.username)
         ) {
             return;
         }
 
         setIsSaving(true);
 
-        setTempEmail(updatedValues.email);
+        setTempUsername(updatedValues.username);
 
         await updateDoc(doc(db, "admin_accounts", uid), updatedValues);
 
-        originalValues.email = updatedValues.email;
+        originalValues.username = updatedValues.username;
         originalValues.role = updatedValues.role;
 
-        setTempEmail(updatedValues.email);
+        setTempUsername(updatedValues.username);
         setTempRole(updatedValues.role);
 
         setIsSaving(false);
@@ -76,7 +74,6 @@ export const EditUsersBox = ({ uid, email, role }) => {
         setShowConfirm(false);
         try {
             await deleteDoc(doc(db, "admin_accounts", uid));
-            await sendPasswordResetEmail(auth, email);
         } catch (err) {
             console.error("Failed to delete admin:", err);
             alert("Failed to delete admin. Check console.");
@@ -88,19 +85,19 @@ export const EditUsersBox = ({ uid, email, role }) => {
             <div className="flex gap-8 items-center">
                 <div className="grid grid-cols-2 gap-3 flex-1">
                     <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Email</label>
+                        <label className="text-sm text-left font-medium text-gray-700">Username</label>
                         <input
                             className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
                                 }`}
-                            type="email"
-                            value={tempEmail}
-                            placeholder="Input email"
-                            onChange={(e) => setTempEmail(e.target.value)}
-                            onBlur={() => handleBlur("email")}
+                            type="username"
+                            value={tempUsername}
+                            placeholder="Input new username"
+                            onChange={(e) => setTempUsername(e.target.value)}
+                            onBlur={() => handleBlur("username")}
                             readOnly={!isEditing}
                         />
-                        {tempEmailError && (
-                            <p className="text-red-500 mt-1 text-sm">{tempEmailError}</p>
+                        {tempUsernameError && (
+                            <p className="text-red-500 mt-1 text-sm">{tempUsernameError}</p>
                         )}
                     </div>
 
@@ -138,14 +135,13 @@ export const EditUsersBox = ({ uid, email, role }) => {
                             )}
                         </button>
                     ) : (
-                        <div></div>
-                        // <button
-                        //     onClick={handleEditToggle}
-                        //     className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg shadow"
-                        // >
-                        //     <Edit size={16} />
-                        //     Edit
-                        // </button>
+                        <button
+                            onClick={handleEditToggle}
+                            className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg shadow"
+                        >
+                            <Edit size={16} />
+                            Edit
+                        </button>
                     )}
                     <button
                         onClick={() => setShowConfirm(true)}

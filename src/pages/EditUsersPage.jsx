@@ -53,7 +53,7 @@ export const EditUsersPage = () => {
                         <EditUsersBox
                             key={admin.id}
                             uid={admin.id}
-                            email={admin.email}
+                            username={admin.username}
                             role={admin.role}
                         />
                     ))
