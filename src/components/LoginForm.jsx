@@ -94,14 +94,14 @@ export const LoginForm = () => {
                 </div>
 
                 <form className="text-white flex flex-col gap-2 w-full max-w-sm mx-auto items-center">
-                    <label htmlFor="email" className="text-left font-medium w-full">Email</label>
+                    <label htmlFor="email" className="text-left font-medium w-full">Email or Username</label>
                     <input
                         type="text"
                         id="email"
                         name="identifier"
                         required
                         className="w-full p-1 rounded bg-white text-black"
-                        placeholder="Please enter your Email"
+                        placeholder="Please enter your Email or Username"
                         value={formData.identifier}
                         onChange={handleChange}
                     />
