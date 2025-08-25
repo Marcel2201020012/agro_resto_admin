@@ -98,13 +98,13 @@ export const AddUsersPage = () => {
       //so we need to sign back in with the correct email.
       await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
 
-      const usernameToLowerCase = username.trim().toLowerCase();
+      // const usernameToLowerCase = username.trim().toLowerCase();
 
       await updateProfile(newUser, { displayName: role });
       console.log(adminEmail);
       await setDoc(doc(db, "admin_accounts", newUser.uid), {
         email,
-        username: usernameToLowerCase,
+        username,
         role,
         createdAt: new Date(),
       });
@@ -170,7 +170,7 @@ export const AddUsersPage = () => {
                 Password
               </label>
               <input
-                type="password"
+                type="text"
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

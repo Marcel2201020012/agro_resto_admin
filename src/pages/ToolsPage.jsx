@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { Background } from "../components/Background";
 import { ToolsBox } from "../components/ToolsBox";
@@ -8,46 +7,20 @@ import settingImg from "../assets/tools_img/settings.png"
 import orderImg from "../assets/tools_img/orderImg.svg"
 import salesImg from "../assets/tools_img/salesImg.png"
 
-import { db, auth } from "../../firebase/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "../../firebase/firebaseConfig";
 
 import bg from "../assets/bg/bg_1.png"
 
 import { useAuth } from "../../hooks/useAuth";
 
-async function getUserRole() {
-    const user = auth.currentUser;
-    if (!user) return null;
-
-    const roleRef = doc(db, "admin_accounts", user.uid);
-    const snap = await getDoc(roleRef);
-
-    if (snap.exists()) {
-        return snap.data().role;
-    }
-    return null;
-}
-
 export const ToolsPage = () => {
-    const [role, setRole] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const { user, userData, checking } = useAuth();
+    const { userData, checking } = useAuth();
 
     const logout = async () => {
         await signOut(auth);
     }
 
-    useEffect(() => {
-        const fetchRole = async () => {
-            const userRole = await getUserRole();
-            setRole(userRole);
-            setLoading(false);
-        };
-
-        fetchRole();
-    }, []);
-
-    if (loading) {
+    if(checking) {
         return <div className="container min-h-screen flex justify-center items-center">
             <p className="text-lg font-semibold">Loading...</p>
         </div>
@@ -63,11 +36,8 @@ export const ToolsPage = () => {
                     {/* Hello + Select Tools grouped together */}
                     <div className="flex flex-col items-center text-center gap-2">
                         <span className="font-bold text-white text-3xl">
-                            Hello, {userData.username}
+                            Hello, {userData?.username}
                         </span>
-                        {/* <span className="font-bold text-white text-3xl">
-                            Select Tools
-                        </span> */}
                     </div>
 
                     {/* Tools section */}
@@ -75,7 +45,7 @@ export const ToolsPage = () => {
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
-                        {role !== "user" && (
+                        {userData?.role !== "user" && (
                             <ToolsBox img={settingImg} title="Settings" route="/settings" />
                         )}
                     </div>

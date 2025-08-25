@@ -2,9 +2,15 @@ import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebaseConfig";
+import { useAuth } from "../../hooks/useAuth";
+
+import { useNavigate } from "react-router-dom"
+import { signOut } from "firebase/auth";
 
 export const EditUsersBox = ({ uid, username, role }) => {
+    const navigate = useNavigate();
     const originalValues = { username, role };
+    const { user, userData } = useAuth();
 
     const [tempUsername, setTempUsername] = useState(username);
     const [tempRole, setTempRole] = useState(role);
@@ -74,6 +80,10 @@ export const EditUsersBox = ({ uid, username, role }) => {
         setShowConfirm(false);
         try {
             await deleteDoc(doc(db, "admin_accounts", uid));
+            if (user && userData?.role === "super admin") {
+                await signOut(auth);
+                navigate("/", { replace: true });
+            }
         } catch (err) {
             console.error("Failed to delete admin:", err);
             alert("Failed to delete admin. Check console.");
@@ -160,7 +170,7 @@ export const EditUsersBox = ({ uid, username, role }) => {
                     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
                         <div className="bg-white rounded-xl p-6 shadow-lg w-1/2">
                             <h2 className="text-lg font-bold mb-4">Confirm Delete</h2>
-                            <p className="mb-6">Delete <b>{email}</b>?</p>
+                            <p className="mb-6">Delete <b>{username}</b>?</p>
                             <div className="flex justify-center gap-8">
                                 <button
                                     onClick={handleDelete}

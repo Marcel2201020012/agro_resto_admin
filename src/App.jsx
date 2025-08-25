@@ -17,9 +17,12 @@ import { UserSettingsPage } from "./pages/UsersSettingPage";
 import { AddUsersPage } from "./pages/AddUsersPage";
 import { EditUsersPage } from "./pages/EditUsersPage";
 
+import { Notfound } from "./pages/NotFound";
+
 import ScrollToTop from "./components/ScrollToTop";
 
 import RequireAuth from "../hooks/RequireAuth";
+import ProtectedRoute from "../hooks/ProtectedRoute";
 
 import OrderListener from "./components/OrderListener";
 import { ToastContainer } from "react-toastify";
@@ -40,19 +43,42 @@ function App() {
           <Route element={<RequireAuth />}>
 
             <Route path="/tools" element={<ToolsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings" element={
+              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
             <Route path="/sales" element={<SalesPage />} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/orderDetail/:id" element={<OrderDetails />} />
 
-            <Route path="/userSettings" element={<UserSettingsPage />} />
+            <Route path="/userSettings" element={
+              <ProtectedRoute allowedRoles={['super admin']}>
+                <UserSettingsPage />
+              </ProtectedRoute>} />
             <Route path="/addUsers" element={<AddUsersPage />} />
-            <Route path="/editUsers" element={<EditUsersPage />} />
-            
-            <Route path="/menuSetting" element={<MenuSettingPage />} />
-            <Route path="/ChooseMenu" element={<ChooseMenuPage />} />
-            <Route path="/editMenu" element={<EditMenuPage />} />
-            <Route path="/addMenu" element={<AddMenuPage />} />
+            <Route path="/editUsers" element={
+              <ProtectedRoute allowedRoles={['super admin']}>
+                <EditUsersPage />
+              </ProtectedRoute>} />
+
+            <Route path="/menuSetting" element={
+              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
+                <MenuSettingPage />
+              </ProtectedRoute>} />
+            <Route path="/ChooseMenu" element={
+              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
+                <ChooseMenuPage />
+              </ProtectedRoute>} />
+            <Route path="/editMenu" element={
+              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
+                <EditMenuPage />
+              </ProtectedRoute>} />
+            <Route path="/addMenu" element={
+              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
+                <AddMenuPage />
+              </ProtectedRoute>} />
+            <Route path="*" element={<Notfound />} />
           </Route>
         </Routes>
       </BrowserRouter>

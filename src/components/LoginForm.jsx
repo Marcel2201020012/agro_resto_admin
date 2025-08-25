@@ -46,16 +46,21 @@ export const LoginForm = () => {
 
             const emailRegex = /\S+@\S+\.\S+/;
             if (!emailRegex.test(identifier)) {
-                const q = query(collection(db, "admin_accounts"), where("username", "==", username));
+                const q = query(collection(db, "admin_accounts"));
                 const snapshot = await getDocs(q);
 
-                if (snapshot.empty) {
+                // Filter locally (case-insensitive)
+                const matchedDoc = snapshot.docs.find(
+                    doc => doc.data().username.toLowerCase() === username
+                );
+
+                if (!matchedDoc) {
                     setError("This account has been deleted or does not exist.");
                     setIsLogin(false);
                     return;
                 }
 
-                email = snapshot.docs[0].data().email;
+                email = matchedDoc.data().email;
             }
 
             const q2 = query(collection(db, "admin_accounts"), where("email", "==", email));

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Background } from "../components/Background";
 import { ToolsBox } from "../components/ToolsBox";
 
@@ -8,41 +7,13 @@ import userImg from "../assets/tools_img/user.png"
 import bg from "../assets/bg/bg_1.png"
 import { useNavigate } from "react-router-dom";
 
-import { db, auth } from "../../firebase/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
-
-async function getUserRole() {
-    const user = auth.currentUser;
-    if (!user) return null;
-
-    const roleRef = doc(db, "admin_accounts", user.uid);
-    const snap = await getDoc(roleRef);
-
-    if (snap.exists()) {
-        return snap.data().role;
-    }
-    return null;
-}
+import { useAuth } from "../../hooks/useAuth";
 
 export const SettingsPage = () => {
     const navigate = useNavigate();
-    const [role, setRole] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const {userData, checking} = useAuth();
 
-    useEffect(() => {
-        getUserRole().then((r) => {
-            if (r === "user") {
-                navigate("/");
-            } else {
-                setRole(r);
-            }
-            setLoading(false);
-        });
-    }, [navigate]);
-
-    if (role === "user") return null;
-
-    if (loading) {
+    if(checking) {
         return <div className="container min-h-screen flex justify-center items-center">
             <p className="text-lg font-semibold">Loading...</p>
         </div>
@@ -60,7 +31,7 @@ export const SettingsPage = () => {
                     </div>
 
                     <div className="relative flex gap-8 p-4">
-                        {role === "super admin" &&
+                        {userData?.role === "super admin" &&
                             <ToolsBox img={userImg} title={"Users"} route={"/userSettings"} />
                         }
                         <ToolsBox img={menuImg} title={"Menu Settings"} route={"/menuSetting"} />

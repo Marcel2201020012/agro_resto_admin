@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 export default function OrderListener() {
     const lastOrderId = useRef(null);
     const firstLoad = useRef(true);
-    const audioRef = useRef(new Audio("/orderSound.mp3"));
+    const audioRef = useRef(new Audio("/agro_resto_notification.mp3"));
     const navigate = useNavigate();
 
     useEffect(() => {

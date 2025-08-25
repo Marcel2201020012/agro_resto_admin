@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import { useAuth } from "../../hooks/useAuth";
 
 export const OrderBox = ({ id, date, status, customerName }) => {
+    const {user, userData, checking} = useAuth();
     const navigate = useNavigate();
     const [isDeleteable, setIsCancelled] = useState(false);
 
@@ -43,7 +45,7 @@ export const OrderBox = ({ id, date, status, customerName }) => {
                 </div>
             </div>
 
-            {isDeleteable && (
+            {isDeleteable && (userData?.role === "admin" || userData?.role === "super admin") && (
                 <button
                     onClick={handleDelete}
                     className="absolute top-2 right-2 text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded hover:bg-red-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
