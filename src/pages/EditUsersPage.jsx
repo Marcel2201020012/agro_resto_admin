@@ -14,13 +14,17 @@ export const EditUsersPage = () => {
 
     useEffect(() => {
         const unsub = onSnapshot(collection(db, "admin_accounts"), (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({
+            let data = snapshot.docs.map((doc) => ({
                 id: doc.id,
-                ...doc.data()
+                ...doc.data(),
             }));
+
+            data = data.filter((acc) => acc.role !== "super admin");
+
             setAccount(data);
             setIsLoading(false);
-        })
+        });
+
         return () => unsub();
     }, []);
 
@@ -28,7 +32,7 @@ export const EditUsersPage = () => {
 
     const admins = getAdminByCreateAt();
 
-     if (isLoading) {
+    if (isLoading) {
         return (
             <div className="container min-h-screen flex justify-center items-center">
                 <p className="text-lg font-semibold">Loading Users Data...</p>
@@ -38,7 +42,7 @@ export const EditUsersPage = () => {
 
     return (
         <div className="container min-h-screen overflow-x-hidden">
-             <div className="text-left pt-8">
+            <div className="text-left pt-8">
                 <div className="text-agro-color font-medium">
                     AGRO RESTO
                 </div>
