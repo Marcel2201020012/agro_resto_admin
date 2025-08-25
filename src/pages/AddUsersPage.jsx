@@ -88,6 +88,13 @@ export const AddUsersPage = () => {
         return;
       }
 
+      await setDoc(doc(db, "admin_accounts", newUser.uid), {
+        email,
+        username,
+        role,
+        createdAt: new Date(),
+      });
+
       //this one to check if pass is correct
       await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
 
@@ -102,13 +109,6 @@ export const AddUsersPage = () => {
 
       await updateProfile(newUser, { displayName: role });
       console.log(adminEmail);
-      await setDoc(doc(db, "admin_accounts", newUser.uid), {
-        email,
-        username,
-        role,
-        createdAt: new Date(),
-      });
-
       alert("User created successfully!");
 
       setEmail("");
