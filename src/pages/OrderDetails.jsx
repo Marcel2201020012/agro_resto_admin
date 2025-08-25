@@ -292,7 +292,7 @@ export const OrderDetails = () => {
                         }).format(Number(result.total * 0.1))}</span>
                     </div>
 
-                    {result.status === "Preparing Food" && (<div className="flex justify-between items-center">
+                    {(result.status === "Preparing Food" || result.status === "Order Finished") && (<div className="flex justify-between items-center">
                         <span className="font-bold">{result.payment}</span>
                         {result.cash ? (<span className="font-bold">{new Intl.NumberFormat('id-ID', {
                             style: 'currency',
