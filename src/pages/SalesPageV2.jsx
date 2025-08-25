@@ -3,6 +3,7 @@ import { collection, getDocs, orderBy, query, Timestamp, where } from "firebase/
 import { db } from "../../firebase/firebaseConfig";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { TrendingUp, Receipt } from "lucide-react";
 
 const toStartOfDay = (d) => {
     const x = new Date(d);
@@ -147,14 +148,30 @@ export const SalesPage = () => {
 
             <div className="bg-white shadow-md rounded-2xl p-6 space-y-6">
                 <h2 className="text-xl font-semibold mb-4">Summary</h2>
-                <div className="flex justify-center gap-6">
-                    <div className="px-8 py-4 bg-gray-50 rounded-xl">
-                        <div className="text-gray-500 text-sm">Total Income</div>
-                        <div className="text-2xl font-bold">Rp {formatIDR.format(summary.totalIncome)}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl mx-auto mt-6">
+                    <div className="flex gap-4 justify-center items-center jusigap-4 p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-shadow">
+                        <div className="p-3 bg-green-100 text-green-600 rounded-full">
+                            <TrendingUp size={24} />
+                        </div>
+                        <div>
+                            <div className="text-gray-500 text-sm font-medium">Total Income</div>
+                            <div className="text-xs text-gray-400 italic">*Before Tax</div>
+                            <div className="text-2xl font-bold text-gray-800">
+                                Rp {formatIDR.format(summary.totalIncome)}
+                            </div>
+                        </div>
                     </div>
-                    <div className="px-8 py-4 bg-gray-50 rounded-xl">
-                        <div className="text-gray-500 text-sm">Total Transactions</div>
-                        <div className="text-2xl font-bold">{summary.totalTransactions}</div>
+
+                    <div className="flex gap-4 justify-center items-center gap-4 p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-shadow">
+                        <div className="p-3 bg-blue-100 text-blue-600 rounded-full">
+                            <Receipt size={24} />
+                        </div>
+                        <div>
+                            <div className="text-gray-500 text-sm font-medium">Total Transactions</div>
+                            <div className="text-2xl font-bold text-gray-800">
+                                {summary.totalTransactions}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="text-left text-xl font-semibold mb-4">Items Sold</div>
