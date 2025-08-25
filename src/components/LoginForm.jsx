@@ -42,10 +42,11 @@ export const LoginForm = () => {
 
         try {
             let email = identifier;
+            const username = identifier.trim().toLowerCase();
 
             const emailRegex = /\S+@\S+\.\S+/;
             if (!emailRegex.test(identifier)) {
-                const q = query(collection(db, "admin_accounts"), where("username", "==", identifier));
+                const q = query(collection(db, "admin_accounts"), where("username", "==", username));
                 const snapshot = await getDocs(q);
 
                 if (snapshot.empty) {
