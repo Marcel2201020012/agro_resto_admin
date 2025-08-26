@@ -19,38 +19,37 @@ export default function OrderListener() {
     useEffect(() => {
         const q = query(collection(db, "transaction_id"), orderBy("createdAt", "desc"));
         const unsub = onSnapshot(q, (snapshot) => {
-            if(!snapshot.empty){
-                const latestOrder = snapshot.docs[0];
-                const latestOrderId = latestOrder.id;
-
-                if(firstLoad.current){
-                    lastOrderId.current = latestOrderId;
-                    firstLoad.current = false;
-                    return;
+            if (firstLoad.current) {
+                if (!snapshot.empty) {
+                    lastOrderId.current = snapshot.docs[0].id;
                 }
-
-                if(latestOrderId !== lastOrderId.current){
-                    audioRef.current.play().catch((err) => {
-                        console.warn("Failed to play notification:", err);
-                    });
-
-                    toast.info(`New order: ${latestOrderId}`, {
-                        autoClose: false,
-                        closeOnClick: false,
-                        closeButton: false,
-                        draggable: false,
-                        onClick: () => {
-                            audioRef.current.pause();
-                            audioRef.current.currentTime = 0;
-                            navigate(`/orderDetail/${latestOrderId}`);
-                            toast.dismiss();
-                        }
-                    });
-                }
-
-                lastOrderId.current = latestOrderId;
+                firstLoad.current = false;
+                return;
             }
+
+            snapshot.docChanges().forEach(change => {
+                if (change.type === "added") {
+                    const newDocId = change.doc.id;
+                    if (snapshot.docs[0].id === newDocId) {
+                        audioRef.current.play().catch(err => console.warn("Failed to play:", err));
+                        toast.info(`New order: ${newDocId}`, {
+                            autoClose: false,
+                            closeOnClick: false,
+                            closeButton: false,
+                            draggable: false,
+                            onClick: () => {
+                                audioRef.current.pause();
+                                audioRef.current.currentTime = 0;
+                                navigate(`/orderDetail/${newDocId}`);
+                                toast.dismiss();
+                            }
+                        });
+                        lastOrderId.current = newDocId;
+                    }
+                }
+            });
         });
+
         return () => unsub();
     }, []);
 
