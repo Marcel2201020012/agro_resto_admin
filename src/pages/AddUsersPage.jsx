@@ -127,7 +127,7 @@ export const AddUsersPage = () => {
   return (
     <div className="container min-h-screen p-6 flex flex-col">
       <div className="mb-10">
-        <div className="text-left text-agro-color font-medium text-lg">
+        <div onClick={() => navigate("/", { replace: true })} className="text-left text-agro-color font-medium text-lg cursor-pointer">
           AGRO RESTO
         </div>
         <h1 className="text-left text-4xl font-bold">

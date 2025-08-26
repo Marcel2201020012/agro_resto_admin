@@ -168,7 +168,7 @@ export const AddMenuPage = () => {
     return (
         <div className="container min-h-screen overflow-x-hidden">
             <div className="relative text-left pt-8 pb-12">
-                <div className="text-agro-color font-medium">AGRO RESTO</div>
+                <div onClick={() => navigate("/", { replace: true })} className="text-agro-color font-medium cursor-pointer">AGRO RESTO</div>
                 <div className="text-4xl font-bold">Add Menu</div>
             </div>
 
