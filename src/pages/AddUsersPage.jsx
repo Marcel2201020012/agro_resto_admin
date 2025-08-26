@@ -81,7 +81,7 @@ export const AddUsersPage = () => {
 
     try {
       const adminEmail = auth.currentUser.email;
-      const adminPassword = prompt("Enter your admin password again");
+      const adminPassword = prompt("Please enter master password to continue.");
 
       if (adminPassword === null || adminPassword === "") {
         setLoading(false);

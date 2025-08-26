@@ -79,10 +79,10 @@ export const EditUsersBox = ({ uid, username, role }) => {
         setShowConfirm(false);
         try {
             await deleteDoc(doc(db, "admin_accounts", uid));
-            if (user && userData?.role === "super admin") {
-                await signOut(auth);
-                navigate("/", { replace: true });
-            }
+            // if (user && userData?.role === "super admin") {
+            //     await signOut(auth);
+            //     navigate("/", { replace: true });
+            // }
         } catch (err) {
             console.error("Failed to delete admin:", err);
             alert("Failed to delete admin. Check console.");
