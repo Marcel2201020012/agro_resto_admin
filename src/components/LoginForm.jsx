@@ -86,7 +86,7 @@ export const LoginForm = () => {
     };
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-start gap-8 pt-4">
+        <div className="relative min-h-screen flex flex-col items-center justify-center gap-8">
             <div className="font-bold text-white text-center text-3xl">
                 <span>Agro Hotel Restaurant</span>
                 <br />

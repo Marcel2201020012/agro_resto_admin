@@ -27,7 +27,7 @@ export const LoginPage = () => {
             </div>;
 
     return (
-        <div className="min-h-screen overflow-x-hidden overflow-y-hidden m-16">
+        <div className="min-h-screen overflow-hidden">
             <Background bg={bg}/>
 
             <main>

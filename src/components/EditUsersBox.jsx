@@ -33,7 +33,6 @@ export const EditUsersBox = ({ uid, username, role }) => {
     const handleEditToggle = () => {
         if (!isEditing) {
             setTempUsername("");
-            setTempRole("user");
         }
         setIsEditing(!isEditing);
     };
