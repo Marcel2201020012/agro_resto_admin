@@ -18,42 +18,57 @@ export const ToolsPage = () => {
     const { userData, checking } = useAuth();
     const [showModal, setShowModal] = useState(false);
 
-    const handleShowModal = () => {
-        setShowModal(true)
-    }
+    // const handleShowModal = () => {
+    //     setShowModal(true)
+    // }
+
+    const ClosingTool = () => {
+        // Get current hour in 24-hour format
+        const now = new Date();
+        const hour = now.getHours();
+
+        // Determine title based on hour
+        // 6 AM to 3 AM the next day = 6 to 23, 0 to 3
+        const title =
+            (hour >= 6 && hour <= 15)
+                ? "Shift Closing"
+                : "Cashier Closing";
+
+        return <ToolsBox img={orderImg} title={title} route="/closing" />;
+    };
 
     const logout = async () => {
         await signOut(auth);
     }
 
-    const handleCashierClosing = async () => {
-        try {
-            console.log("running expire logic")
-            const q = query(
-                collection(db, "transaction_id"),
-                where("status", "in", ["Waiting For Payment On Cashier", "Preparing Food"])
-            );
-            const snapshot = await getDocs(q);
+    // const handleCashierClosing = async () => {
+    //     try {
+    //         console.log("running expire logic")
+    //         const q = query(
+    //             collection(db, "transaction_id"),
+    //             where("status", "in", ["Waiting For Payment On Cashier", "Preparing Food"])
+    //         );
+    //         const snapshot = await getDocs(q);
 
-            const updates = [];
-            snapshot.forEach(docSnap => {
-                const { status } = docSnap.data();
-                if (status === "Waiting For Payment On Cashier") {
-                    updates.push(updateDoc(docSnap.ref, { status: "Order Canceled" }));
-                } else if (status === "Preparing Food") {
-                    updates.push(updateDoc(docSnap.ref, { status: "Order Finished" }));
-                }
-            });
-            if (updates.length) {
-                await Promise.all(updates);
-                console.log(`Updated ${updates.length} orders`);
-            }
-        } catch (error) {
-            console.log("Error updating pending status: ", error)
-        }
+    //         const updates = [];
+    //         snapshot.forEach(docSnap => {
+    //             const { status } = docSnap.data();
+    //             if (status === "Waiting For Payment On Cashier") {
+    //                 updates.push(updateDoc(docSnap.ref, { status: "Order Canceled" }));
+    //             } else if (status === "Preparing Food") {
+    //                 updates.push(updateDoc(docSnap.ref, { status: "Order Finished" }));
+    //             }
+    //         });
+    //         if (updates.length) {
+    //             await Promise.all(updates);
+    //             console.log(`Updated ${updates.length} orders`);
+    //         }
+    //     } catch (error) {
+    //         console.log("Error updating pending status: ", error)
+    //     }
 
-        logout();
-    }
+    //     logout();
+    // }
 
     if (checking) {
         return <div className="container min-h-screen flex justify-center items-center">
@@ -79,8 +94,9 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
+                        <ClosingTool/>
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
-                        <div
+                        {/* <div
                             onClick={handleShowModal}
                             className="snap-center cursor-pointer border rounded-3xl flex flex-col items-center gap-4 bg-white p-8 min-w-[240px] transition-all duration-200 hover:scale-105 hover:shadow-xl"
                         >
@@ -92,17 +108,23 @@ export const ToolsPage = () => {
                             <span className="font-bold text-2xl text-agro-color text-center">
                                 {"Cashier Closing"}
                             </span>
-                        </div>
+                        </div> */}
                         <ToolsBox img={settingImg} title="Settings" route="/settings" />
                     </div>
                 </div>
             </main>
 
-            {showModal && (
+            {/* {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
                     <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
-                        <h2 className="text-lg font-bold mb-4">Attention</h2>
-                        <p>Are you sure wanted to do <span className="font-bold">Cashier Closing</span></p>
+                        <h2 className="text-lg font-bold mb-4 text-red-600">⚠️ Warning: </h2>
+                        <p>
+                            Performing <span className="font-bold">Cashier Closing</span>
+                            <span className="text-gray-700"> will <span className="font-bold">cancel all unfinished orders</span>.</span>
+                        </p>
+                        <p>
+                            Only proceed if you intend to <span className="font-bold text-red-600">discard all pending transactions</span>.
+                        </p>
                         <div className="mt-6 flex justify-center gap-4">
                             <button
                                 onClick={() => { handleCashierClosing }}
@@ -117,7 +139,7 @@ export const ToolsPage = () => {
                     </div>
                 </div>
             )
-            }
+            } */}
 
             <button
                 onClick={logout}

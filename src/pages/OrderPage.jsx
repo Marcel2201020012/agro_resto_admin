@@ -1,13 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { OrderBox } from "../components/OrderBox";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, updateDoc, onSnapshot, getDocs, orderBy, query, Timestamp, where } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+
+const toStartOfDay = (d) => {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+};
+
+const toEndOfDay = (d) => {
+    const x = new Date(d);
+    x.setHours(23, 59, 59, 999);
+    return x;
+};
+
+const dayKey = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+};
 
 export const OrderPage = () => {
     const [orders, setOrder] = useState([]);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
+
+    const today = new Date();
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(today.getDate() - 3);
+    const [from, setFrom] = useState(threeDaysAgo);
+    const [to, setTo] = useState(today);
 
     const STATUS_PRIORITY = {
         'Waiting For Payment On Cashier': 1,
@@ -15,33 +40,6 @@ export const OrderPage = () => {
         'Order Canceled': 3,
         'Order Finished': 4
     };
-
-    const sortedOrders = [...orders].sort((a, b) => {
-        const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
-        if (statusComparison !== 0) return statusComparison;
-    });
-
-    const getOrdersByStatus = (status) => {
-        const orders = sortedOrders
-            .filter(order => order.status === status)
-            .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
-
-        let heightClass = "";
-        if (orders.length > 0 && orders.length < 3) {
-            heightClass = "h-32";
-        } else if (orders.length < 5) {
-            heightClass = "h-64";
-        } else if (orders.length >= 5) {
-            heightClass = "h-96";
-        }
-
-        return { orders, heightClass };
-    };
-
-    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
-    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
-    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
-    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
 
     useEffect(() => {
         const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
@@ -54,6 +52,97 @@ export const OrderPage = () => {
         });
         return () => unsub();
     }, []);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const start = toStartOfDay(new Date(from));
+                const end = toEndOfDay(new Date(to));
+
+                const qRef = query(
+                    collection(db, "transaction_id"),
+                    where("createdAt", ">=", Timestamp.fromDate(start)),
+                    where("createdAt", "<=", Timestamp.fromDate(end)),
+                    orderBy("createdAt", "asc")
+                );
+
+                const snap = await getDocs(qRef);
+                const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+                let income = 0;
+                const foodsMap = new Map();
+                const perDay = new Map();
+
+                for (const t of rows) {
+                    const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+                    if (!created) continue;
+
+                    const key = dayKey(created);
+                    const totalNum = Number(t.total) || 0;
+                    income += totalNum;
+
+                    const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
+                    dEntry.income += totalNum;
+                    dEntry.count += 1;
+                    perDay.set(key, dEntry);
+
+                    const items = Array.isArray(t.orderDetails)
+                        ? t.orderDetails
+                        : Object.values(t.orderDetails || {});
+
+                    for (const it of items) {
+                        const name = it?.name ?? "Unknown";
+                        const qty = Number(it?.jumlah) || 0;
+                        foodsMap.set(name, (foodsMap.get(name) || 0) + qty);
+                    }
+                }
+
+                const foods = [...foodsMap.entries()]
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, qty]) => ({ name, qty }));
+
+                const chart = [...perDay.entries()]
+                    .sort((a, b) => a[1].date - b[1].date)
+                    .map(([key, v]) => ({ date: key, income: v.income, count: v.count }));
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, [from, to]);
+
+    const filteredSortedOrders = useMemo(() => {
+        return [...orders]
+            .filter(order => {
+                const createdAt = order.createdAt?.toDate();
+                if (!createdAt) return false;
+
+                // Compare with from/to
+                return createdAt >= from && createdAt <= to;
+            })
+            .sort((a, b) => {
+                const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+                if (statusComparison !== 0) return statusComparison;
+                return b.createdAt.toDate() - a.createdAt.toDate();
+            });
+    }, [orders, from, to]);
+
+    const getOrdersByStatus = status => {
+        const statusOrders = filteredSortedOrders.filter(order => order.status === status);
+
+        let heightClass = "";
+        if (statusOrders.length > 0 && statusOrders.length < 2) heightClass = "h-32";
+        else if (statusOrders.length < 4) heightClass = "h-40";
+        else if (statusOrders.length >= 6) heightClass = "h-96";
+
+        return { orders: statusOrders, heightClass };
+    };
+
+    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
+    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
+    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
+    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
 
     useEffect(() => {
         const checkAndExpire = async () => {
@@ -122,18 +211,40 @@ export const OrderPage = () => {
     }, []);
 
     if (isLoading) return <div className="container min-h-screen flex justify-center items-center">
-        <p className="text-lg font-semibold">Loading Menu List...</p>
+        <p className="text-lg font-semibold">Loading Transaction List...</p>
     </div>;
 
     return (
         <div className="container min-h-screen overflow-x-hidden">
 
-            <div className="text-left pt-8 pb-12">
-                <div onClick={() => navigate("/", { replace: true })} className="text-agro-color font-medium cursor-pointer">
-                    AGRO RESTO
+            <div className="flex flex-wrap justify-between items-center gap-4 text-left pt-8 pb-12">
+                <div className="text-left">
+                    <div onClick={() => navigate("/", { replace: true })} className="text-agro-color font-medium cursor-pointer">
+                        AGRO RESTO
+                    </div>
+                    <div className="text-4xl font-bold">
+                        Order List
+                    </div>
                 </div>
-                <div className="text-4xl font-bold">
-                    Order List
+                <div className="flex gap-6">
+                    <div>
+                        <label className="block text-left text-sm text-gray-600">From</label>
+                        <input
+                            type="date"
+                            className="border bg-white rounded-xl px-3 py-2"
+                            value={from.toISOString().slice(0, 10)} // convert Date to yyyy-mm-dd string
+                            onChange={(e) => setFrom(new Date(e.target.value))} // convert string back to Date
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-left text-sm text-gray-600">To</label>
+                        <input
+                            type="date"
+                            className="border bg-white rounded-xl px-3 py-2"
+                            value={to.toISOString().slice(0, 10)} // convert Date to yyyy-mm-dd string
+                            onChange={(e) => setTo(new Date(e.target.value))} // convert string back to Date
+                        />
+                    </div>
                 </div>
             </div>
 

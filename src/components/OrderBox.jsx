@@ -5,15 +5,24 @@ import { db } from "../../firebase/firebaseConfig";
 import { useAuth } from "../../hooks/useAuth";
 
 export const OrderBox = ({ id, date, status, customerName }) => {
-    const {user, userData, checking} = useAuth();
+    const { user, userData, checking } = useAuth();
     const navigate = useNavigate();
     const [isDeleteable, setIsCancelled] = useState(false);
 
-    const formatDate = (timestamp) => {
-        const d = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-        const pad = (n) => String(n).padStart(2, "0");
-        return `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
+   const formatDate = (timestamp) => {
+    // Convert Firestore timestamp or JS date to a Date object
+    const d = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+
+    // Pad single-digit month/day/hours/minutes with leading zero
+    const pad = (n) => String(n).padStart(2, "0");
+
+    // Return in MM/DD/YYYY HH:MM format
+    const date = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+    const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    return `${date} ${time}`;
+};
+
 
     const handleDelete = async (e) => {
         e.stopPropagation();

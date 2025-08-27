@@ -69,7 +69,7 @@ export const SalesPage = () => {
                     if (!created) continue;
 
                     const key = dayKey(created);
-                    const totalNum = Number(t.total) || 0;
+                    const totalNum = t.status === "Order Finished" ? Number(t.total) || 0 : 0;
                     income += totalNum;
 
                     const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
