@@ -68,7 +68,7 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
-                        <ToolsBox img={orderImg} title={shiftTitle} route="/closing" />;
+                        <ToolsBox img={orderImg} title={shiftTitle} route="/closing" />
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
                         {/* <div
                             onClick={handleShowModal}
