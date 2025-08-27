@@ -43,11 +43,7 @@ function App() {
           <Route element={<RequireAuth />}>
 
             <Route path="/tools" element={<ToolsPage />} />
-            <Route path="/settings" element={
-              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/sales" element={<SalesPage />} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/orderDetail/:id" element={<OrderDetails />} />
@@ -62,18 +58,9 @@ function App() {
                 <EditUsersPage />
               </ProtectedRoute>} />
 
-            <Route path="/menuSetting" element={
-              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
-                <MenuSettingPage />
-              </ProtectedRoute>} />
-            <Route path="/ChooseMenu" element={
-              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
-                <ChooseMenuPage />
-              </ProtectedRoute>} />
-            <Route path="/editMenu" element={
-              <ProtectedRoute allowedRoles={['admin', 'super admin']}>
-                <EditMenuPage />
-              </ProtectedRoute>} />
+            <Route path="/menuSetting" element={ <MenuSettingPage />} />
+            <Route path="/ChooseMenu" element={<ChooseMenuPage />} />
+            <Route path="/editMenu" element={<EditMenuPage />} />
             <Route path="/addMenu" element={
               <ProtectedRoute allowedRoles={['admin', 'super admin']}>
                 <AddMenuPage />

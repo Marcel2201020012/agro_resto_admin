@@ -15,6 +15,7 @@ export const MenuSettingPage = () => {
     const navigate = useNavigate();
     const [confirmReset, setConfirmReset] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    const { userData } = useAuth();
 
     const handleResetBestSeller = () => {
         setConfirmReset(true);
@@ -50,11 +51,15 @@ export const MenuSettingPage = () => {
                     </div>
 
                     <div className="relative flex gap-8 p-4">
-                        <ToolsBox img={mainDish} title={"Add Menu"} route={"/addMenu"}></ToolsBox>
+                        {userData?.role !== "user" &&
+                            <ToolsBox img={mainDish} title={"Add Menu"} route={"/addMenu"}></ToolsBox>
+                        }
                         <ToolsBox img={sideDish} title={"Edit Menu"} route={"/chooseMenu"}></ToolsBox>
-                        <div onClick={handleResetBestSeller}>
-                            <ToolsBox img={sideDish} title={"Reset Best Seller"} route={""}></ToolsBox>
-                        </div>
+                        {userData?.role !== "user" &&
+                            <div onClick={handleResetBestSeller}>
+                                <ToolsBox img={sideDish} title={"Reset Best Seller"} route={""}></ToolsBox>
+                            </div>
+                        }
                     </div>
                 </div>
             </main>

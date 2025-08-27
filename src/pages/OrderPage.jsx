@@ -55,6 +55,72 @@ export const OrderPage = () => {
         return () => unsub();
     }, []);
 
+    useEffect(() => {
+        const checkAndExpire = async () => {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+
+            // Only run if current time is 12:00 AM or 6:00 PM
+            try {
+                if ((hour === 0 || hour === 18) && minute === 0) {
+                    console.log("running expire logic")
+                    const q = query(
+                        collection(db, "transaction_id"),
+                        where("status", "in", ["Waiting For Payment On Cashier", "Preparing Food"])
+                    );
+                    const snapshot = await getDocs(q);
+                    const nowMs = now.getTime();
+
+                    const updates = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const status = data.status;
+                        const createdAtField = data.createdAt;
+                        if (!createdAtField) return;
+                        const createdAt = createdAtField.toDate().getTime();
+                        const diffMinutes = (nowMs - createdAt) / (1000 * 60);
+
+                        // expire if >15 min
+                        if (status === "Waiting For Payment On Cashier" && diffMinutes >= 15) {
+                            updates.push(
+                                updateDoc(doc(db, "transaction_id", docSnap.id), {
+                                    status: "Order Canceled"
+                                })
+                            );
+                        }
+
+                        if (status === "Preparing Food") {
+                            if (diffMinutes >= 15) {
+                                updates.push(
+                                    updateDoc(doc(db, "transaction_id", docSnap.id), {
+                                        status: "Order Finished"
+                                    })
+                                );
+                            }
+                        }
+                    });
+                    if (updates.length) {
+                        await Promise.all(updates);
+                        console.log(`Updated ${updates.length} orders`);
+                    }
+                }
+            } catch (error) {
+                console.log("Error updating pending status: ", error)
+            }
+        };
+
+        // Run check immediately and then set interval to check every minute
+        checkAndExpire();
+        const interval = setInterval(() => {
+            const now = new Date();
+            if ((now.getHours() === 0 || now.getHours() === 18) && now.getMinutes() === 0) {
+                checkAndExpire();
+            }
+        }, 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     if (isLoading) return <div className="container min-h-screen flex justify-center items-center">
         <p className="text-lg font-semibold">Loading Menu List...</p>
     </div>;
