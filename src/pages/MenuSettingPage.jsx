@@ -11,6 +11,8 @@ import { getDocs, updateDoc, collection, doc } from "firebase/firestore";
 
 import bg from "../assets/bg/bg_1.png"
 
+import { useAuth } from "../../hooks/useAuth";
+
 export const MenuSettingPage = () => {
     const navigate = useNavigate();
     const [confirmReset, setConfirmReset] = useState(false);
