@@ -17,7 +17,7 @@ export const MenuSettingPage = () => {
     const navigate = useNavigate();
     const [confirmReset, setConfirmReset] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
-    const { userData } = useAuth();
+    const { userData, checking } = useAuth();
 
     const handleResetBestSeller = () => {
         setConfirmReset(true);
@@ -40,6 +40,12 @@ export const MenuSettingPage = () => {
         } finally {
             setConfirmed(false);
         }
+    }
+
+    if (checking) {
+        return <div className="container min-h-screen flex justify-center items-center">
+            <p className="text-lg font-semibold">Loading...</p>
+        </div>
     }
 
     return (
