@@ -19,30 +19,26 @@ import { useAuth } from "../../hooks/useAuth";
 export const ToolsPage = () => {
     const { userData, checking } = useAuth();
 
-    const ClosingTool = () => {
-        const shiftDocRef = doc(db, "app_state", "shift");
-        const [shiftType, setShiftType] = useState(null);
-        const shiftTitle = shiftType === "morning" ? "Shift Closing" : "Cashier Closing";
+    const shiftDocRef = doc(db, "app_state", "shift");
+    const [shiftType, setShiftType] = useState(null);
+    const shiftTitle = shiftType === "morning" ? "Shift Closing" : "Cashier Closing";
 
-        useEffect(() => {
-            const unsub = onSnapshot(
-                shiftDocRef,
-                (snap) => {
-                    if (snap.exists()) {
-                        setShiftType(snap.data().type);
-                    }
-                },
-                (err) => {
-                    console.error("Error listening to shift doc:", err);
+    useEffect(() => {
+        const unsub = onSnapshot(
+            shiftDocRef,
+            (snap) => {
+                if (snap.exists()) {
+                    setShiftType(snap.data().type);
                 }
-            );
+            },
+            (err) => {
+                console.error("Error listening to shift doc:", err);
+            }
+        );
 
-            // Cleanup listener when component unmounts
-            return () => unsub();
-        }, [shiftDocRef]);
-
-        return <ToolsBox img={orderImg} title={shiftTitle} route="/closing" />;
-    };
+        // Cleanup listener when component unmounts
+        return () => unsub();
+    }, [shiftDocRef]);
 
     const logout = async () => {
         await signOut(auth);
@@ -72,7 +68,7 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
-                        <ClosingTool />
+                        <ToolsBox img={orderImg} title={shiftTitle} route="/closing" />;
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
                         {/* <div
                             onClick={handleShowModal}
