@@ -1,4 +1,4 @@
-import { signOut } from "firebase/auth";
+import { useState, useEffect } from "react";
 import { Background } from "../components/Background";
 import { ToolsBox } from "../components/ToolsBox";
 import { ToolsBoxSales } from "../components/ToolBoxSales";
@@ -7,7 +7,10 @@ import settingImg from "../assets/tools_img/settings.png"
 import orderImg from "../assets/tools_img/orderImg.svg"
 import salesImg from "../assets/tools_img/salesImg.png"
 
+import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 
 import bg from "../assets/bg/bg_1.png"
 
@@ -17,18 +20,28 @@ export const ToolsPage = () => {
     const { userData, checking } = useAuth();
 
     const ClosingTool = () => {
-        // Get current hour in 24-hour format
-        const now = new Date();
-        const hour = now.getHours();
+        const shiftDocRef = doc(db, "app_state", "shift");
+        const [shiftType, setShiftType] = useState(null);
+        const shiftTitle = shiftType === "morning" ? "Shift Closing" : "Cashier Closing";
 
-        // Determine title based on hour
-        // 6 AM to 3 AM the next day = 6 to 23, 0 to 3
-        const title =
-            (hour >= 6 && hour <= 15)
-                ? "Shift Closing"
-                : "Cashier Closing";
+        useEffect(() => {
+            const unsub = onSnapshot(
+                shiftDocRef,
+                (snap) => {
+                    if (snap.exists()) {
+                        setShiftType(snap.data().type);
+                    }
+                },
+                (err) => {
+                    console.error("Error listening to shift doc:", err);
+                }
+            );
 
-        return <ToolsBox img={orderImg} title={title} route="/closing" />;
+            // Cleanup listener when component unmounts
+            return () => unsub();
+        }, [shiftDocRef]);
+
+        return <ToolsBox img={orderImg} title={shiftTitle} route="/closing" />;
     };
 
     const logout = async () => {
@@ -59,7 +72,7 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
-                        <ClosingTool/>
+                        <ClosingTool />
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
                         {/* <div
                             onClick={handleShowModal}
