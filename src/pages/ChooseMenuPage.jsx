@@ -40,6 +40,7 @@ export const ChooseMenuPage = () => {
                             <div className="flex gap-6 w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth p-5">
                                 <EditMenuListBox img={mainDish} title="Main Dish" route="/editMenu" category="Main Dish" />
                                 <EditMenuListBox img={sideDish} title="Side Dish" route="/editMenu" category="Sides" />
+                                <EditMenuListBox img={sideDish} title="Rice Bowl" route="/editMenu" category="Rice Bowl" />
                                 <EditMenuListBox img={drinks} title="Coffee" route="/editMenu" category="Coffee" />
                                 <EditMenuListBox img={drinks} title="Non-Coffee" route="/editMenu" category="Non-Coffee" />
                                 <EditMenuListBox img={drinks} title="Juice" route="/editMenu" category="Juice" />

@@ -187,6 +187,7 @@ export const AddMenuPage = () => {
                                 <option value="">-- Select Food Category --</option>
                                 <option value="Main Dish">Main Dish</option>
                                 <option value="Sides">Sides</option>
+                                <option value="Rice Bowl">Rice Bowl</option>
                                 <option value="Coffee">Coffee</option>
                                 <option value="Non-Coffee">Non-Coffee</option>
                                 <option value="Juice">Juice</option>

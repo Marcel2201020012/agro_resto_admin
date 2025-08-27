@@ -12,15 +12,9 @@ import { auth } from "../../firebase/firebaseConfig";
 import bg from "../assets/bg/bg_1.png"
 
 import { useAuth } from "../../hooks/useAuth";
-import { useState } from "react";
 
 export const ToolsPage = () => {
     const { userData, checking } = useAuth();
-    const [showModal, setShowModal] = useState(false);
-
-    // const handleShowModal = () => {
-    //     setShowModal(true)
-    // }
 
     const ClosingTool = () => {
         // Get current hour in 24-hour format
@@ -40,35 +34,6 @@ export const ToolsPage = () => {
     const logout = async () => {
         await signOut(auth);
     }
-
-    // const handleCashierClosing = async () => {
-    //     try {
-    //         console.log("running expire logic")
-    //         const q = query(
-    //             collection(db, "transaction_id"),
-    //             where("status", "in", ["Waiting For Payment On Cashier", "Preparing Food"])
-    //         );
-    //         const snapshot = await getDocs(q);
-
-    //         const updates = [];
-    //         snapshot.forEach(docSnap => {
-    //             const { status } = docSnap.data();
-    //             if (status === "Waiting For Payment On Cashier") {
-    //                 updates.push(updateDoc(docSnap.ref, { status: "Order Canceled" }));
-    //             } else if (status === "Preparing Food") {
-    //                 updates.push(updateDoc(docSnap.ref, { status: "Order Finished" }));
-    //             }
-    //         });
-    //         if (updates.length) {
-    //             await Promise.all(updates);
-    //             console.log(`Updated ${updates.length} orders`);
-    //         }
-    //     } catch (error) {
-    //         console.log("Error updating pending status: ", error)
-    //     }
-
-    //     logout();
-    // }
 
     if (checking) {
         return <div className="container min-h-screen flex justify-center items-center">
@@ -113,33 +78,6 @@ export const ToolsPage = () => {
                     </div>
                 </div>
             </main>
-
-            {/* {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                    <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
-                        <h2 className="text-lg font-bold mb-4 text-red-600">⚠️ Warning: </h2>
-                        <p>
-                            Performing <span className="font-bold">Cashier Closing</span>
-                            <span className="text-gray-700"> will <span className="font-bold">cancel all unfinished orders</span>.</span>
-                        </p>
-                        <p>
-                            Only proceed if you intend to <span className="font-bold text-red-600">discard all pending transactions</span>.
-                        </p>
-                        <div className="mt-6 flex justify-center gap-4">
-                            <button
-                                onClick={() => { handleCashierClosing }}
-                                className="bg-green-500 text-white px-4 py-2 rounded"
-                            >
-                                Yes
-                            </button>
-                            <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setShowModal(false)}>
-                                No
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )
-            } */}
 
             <button
                 onClick={logout}

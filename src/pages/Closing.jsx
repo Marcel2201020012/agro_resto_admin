@@ -20,7 +20,8 @@ export const Closing = () => {
     const [orders, setOrder] = useState([]);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
-    const [isAllowed, setIsAllowed] = useState(false)
+    const [isAllowed, setIsAllowed] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     const formatIDR = new Intl.NumberFormat("id-ID");
     const [summary, setSummary] = useState({
@@ -69,25 +70,108 @@ export const Closing = () => {
     }, [shiftType, hour]);
 
     if (shiftType === "morning") {
-        // Morning shift: today 6:00 to today 15:59
         from.setHours(6, 0, 0, 0);
-        to.setHours(15, 59, 59, 999);
-    } else {
-        // Night shift: 16:00 today - 05:59 next day
-        if (hour >= 16) {
-            // Current night shift (today 16:00 to tomorrow 05:59)
-            from.setHours(10, 0, 0, 0);
-            to.setDate(to.getMonth() + 1);
-            to.setHours(5, 59, 59, 999);
+        to.setHours(14, 59, 59, 999);
+    } else if (shiftType === "night") {
+        if (hour >= 15) {
+            // Night shift starting today 16:00
+            from.setHours(15, 0, 0, 0);
+            to.setDate(to.getDate() + 1); // next day
+            to.setHours(4, 59, 59, 999);
         } else {
-            // Early morning of night shift (yesterday 16:00 to today 05:59)
-            from.setDate(from.getMonth() - 1);
-            from.setHours(16, 0, 0, 0);
-            to.setHours(5, 59, 59, 999);
+            // Early morning of night shift (past midnight, before 06:00)
+            from.setDate(from.getDate() - 1); // yesterday 16:00
+            from.setHours(15, 0, 0, 0);
+            to.setHours(4, 59, 59, 999); // today
         }
     }
 
-    const handleShiftClose = async () => {
+    useEffect(() => {
+        const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
+            const orderData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setOrder(orderData);
+            setIsLoading(false)
+        });
+        return () => unsub();
+    }, []);
+
+    const filteredSortedOrders = useMemo(() => {
+        return orders
+            .filter(order => {
+                const createdAt = order.createdAt?.toDate();
+                if (!createdAt) return false;
+                return createdAt >= from && createdAt <= to;
+            })
+            .sort((a, b) => {
+                const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+                if (statusComparison !== 0) return statusComparison;
+                return b.createdAt.toDate() - a.createdAt.toDate();
+            });
+    }, [orders, from, to]);
+
+
+    const getOrdersByStatus = status => {
+        const statusOrders = filteredSortedOrders.filter(order => order.status === status);
+
+        let heightClass = "";
+        if (statusOrders.length > 0 && statusOrders.length < 2) heightClass = "h-32";
+        else if (statusOrders.length < 4) heightClass = "h-40";
+        else if (statusOrders.length >= 6) heightClass = "h-96";
+
+        return { orders: statusOrders, heightClass };
+    };
+
+    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
+    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
+    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
+    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const qRef = query(
+                    collection(db, "transaction_id"),
+                    orderBy("createdAt", "asc"),
+                    where("createdAt", ">=", Timestamp.fromDate(from)),
+                    where("createdAt", "<=", Timestamp.fromDate(to))
+                );
+
+                const snap = await getDocs(qRef);
+                const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+                let income = 0;
+                const perDay = new Map();
+
+                for (const t of rows) {
+                    const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+                    if (!created) continue;
+
+                    const key = dayKey(created);
+                    const totalNum = t.status === "Order Finished" ? Number(t.total) || 0 : 0;
+                    income += totalNum;
+
+                    const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
+                    dEntry.income += totalNum;
+                    dEntry.count += 1;
+                    perDay.set(key, dEntry);
+                }
+
+                setSummary({ totalIncome: income, totalTransactions: rows.length });
+            } catch (e) {
+                console.error(e);
+            }
+        })();
+    }, [from, to]);
+
+    const handleShiftClose = () => {
+        setShowModal(true);
+    }
+
+    const handleShiftClosing = async () => {
+        console.log("ok");
         if (!isAllowed) return;
         // Update shift type after closing
         const newShift = shiftType === "morning" ? "night" : "morning";
@@ -129,87 +213,6 @@ export const Closing = () => {
 
         await signOut(auth);
     };
-
-    useEffect(() => {
-        const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
-            const orderData = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setOrder(orderData);
-            setIsLoading(false)
-        });
-        return () => unsub();
-    }, []);
-
-    const filteredSortedOrders = useMemo(() => {
-        return [...orders]
-            .filter(order => {
-                const createdAt = order.createdAt?.toDate();
-                if (!createdAt) return false;
-
-                // Compare with from/to
-                return createdAt >= from && createdAt <= to;
-            })
-            .sort((a, b) => {
-                const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
-                if (statusComparison !== 0) return statusComparison;
-                return b.createdAt.toDate() - a.createdAt.toDate();
-            });
-    }, [orders, from, to]);
-
-    const getOrdersByStatus = status => {
-        const statusOrders = filteredSortedOrders.filter(order => order.status === status);
-
-        let heightClass = "";
-        if (statusOrders.length > 0 && statusOrders.length < 2) heightClass = "h-32";
-        else if (statusOrders.length < 4) heightClass = "h-40";
-        else if (statusOrders.length >= 6) heightClass = "h-96";
-
-        return { orders: statusOrders, heightClass };
-    };
-
-    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
-    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
-    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
-    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
-
-    useEffect(() => {
-        (async () => {
-            try {
-                const qRef = query(
-                    collection(db, "transaction_id"),
-                    where("createdAt", ">=", Timestamp.fromDate(from)),
-                    where("createdAt", "<=", Timestamp.fromDate(to)),
-                    orderBy("createdAt", "asc")
-                );
-
-                const snap = await getDocs(qRef);
-                const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-                let income = 0;
-                const perDay = new Map();
-
-                for (const t of rows) {
-                    const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
-                    if (!created) continue;
-
-                    const key = dayKey(created);
-                    const totalNum = t.status === "Order Finished" ? Number(t.total) || 0 : 0;
-                    income += totalNum;
-
-                    const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
-                    dEntry.income += totalNum;
-                    dEntry.count += 1;
-                    perDay.set(key, dEntry);
-                }
-
-                setSummary({ totalIncome: income, totalTransactions: rows.length });
-            } catch (e) {
-                console.error(e);
-            }
-        })();
-    }, [from, to]);
 
     if (isLoading) return <div className="container min-h-screen flex justify-center items-center">
         <p className="text-lg font-semibold">Loading Transaction List...</p>
@@ -360,6 +363,33 @@ export const Closing = () => {
                     </div>
                 )}
             </div>
+
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                    <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
+                        <h2 className="text-lg font-bold mb-4 text-red-600">⚠️ Warning: </h2>
+                        <p>
+                            Performing <span className="font-bold">Cashier Closing</span>
+                            <span className="text-gray-700"> will <span className="font-bold">cancel all unfinished orders</span>.</span>
+                        </p>
+                        <p>
+                            Only proceed if you intend to <span className="font-bold text-red-600">cancel all pending transactions</span>.
+                        </p>
+                        <div className="mt-6 flex justify-center gap-4">
+                            <button
+                                onClick={handleShiftClosing}
+                                className="bg-green-500 text-white px-4 py-2 rounded"
+                            >
+                                Yes
+                            </button>
+                            <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setShowModal(false)}>
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
 
             <div className="mt-10 mb-8 flex justify-between">
                 <button onClick={() => navigate(-1)} className="bg-agro-color rounded-full p-2 w-24 text-white">
