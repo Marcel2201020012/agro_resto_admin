@@ -1,9 +1,17 @@
 import { EditMenuListBox } from "../components/EditMenuListBox";
 import { useRef } from "react";
 
-import mainDish from "../assets/edit_menu_img/main_dish.svg"
-import sideDish from "../assets/edit_menu_img/side_dish.svg"
+import mainDish from "../assets/edit_menu_img/main_dish_2.png"
+import sideDish from "../assets/edit_menu_img/side_dish_2.png"
+import riceBowl from "../assets/edit_menu_img/rice_bowl.png"
+import coffee from "../assets/edit_menu_img/coffee.png"
+import nonCoffee from "../assets/edit_menu_img/non_coffee.png"
+import juice from "../assets/edit_menu_img/juice.png"
+import softDrink from "../assets/edit_menu_img/soft_drink.png"
+import tea from "../assets/edit_menu_img/tea.png"
+import beer from "../assets/edit_menu_img/beer.png"
 import drinks from "../assets/edit_menu_img/drinks.svg"
+
 import { useNavigate } from "react-router-dom";
 import { Background } from "../components/Background";
 
@@ -40,13 +48,13 @@ export const ChooseMenuPage = () => {
                             <div className="flex gap-6 w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth p-5">
                                 <EditMenuListBox img={mainDish} title="Main Dish" route="/editMenu" category="Main Dish" />
                                 <EditMenuListBox img={sideDish} title="Side Dish" route="/editMenu" category="Sides" />
-                                <EditMenuListBox img={sideDish} title="Rice Bowl" route="/editMenu" category="Rice Bowl" />
-                                <EditMenuListBox img={drinks} title="Coffee" route="/editMenu" category="Coffee" />
-                                <EditMenuListBox img={drinks} title="Non-Coffee" route="/editMenu" category="Non-Coffee" />
-                                <EditMenuListBox img={drinks} title="Juice" route="/editMenu" category="Juice" />
-                                <EditMenuListBox img={drinks} title="Tea" route="/editMenu" category="Tea" />
-                                <EditMenuListBox img={drinks} title="Soft Drink" route="/editMenu" category="Soft Drink" />
-                                <EditMenuListBox img={drinks} title="Beer" route="/editMenu" category="Beer" />
+                                <EditMenuListBox img={riceBowl} title="Rice Bowl" route="/editMenu" category="Rice Bowl" />
+                                <EditMenuListBox img={coffee} title="Coffee" route="/editMenu" category="Coffee" />
+                                <EditMenuListBox img={nonCoffee} title="Non-Coffee" route="/editMenu" category="Non-Coffee" />
+                                <EditMenuListBox img={juice} title="Juice" route="/editMenu" category="Juice" />
+                                <EditMenuListBox img={tea} title="Tea" route="/editMenu" category="Tea" />
+                                <EditMenuListBox img={softDrink} title="Soft Drink" route="/editMenu" category="Soft Drink" />
+                                <EditMenuListBox img={beer} title="Beer" route="/editMenu" category="Beer" />
                             </div>
                         </div>
                     </div>
