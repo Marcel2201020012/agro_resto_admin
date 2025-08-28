@@ -51,7 +51,7 @@ export const EditUsersPage = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8">
+            <div className="grid grid-cols-2 items-center justify-center gap-8 mt-8 mb-8 overflow-y-scroll h-108">
                 {
                     admins.map(admin => (
                         <EditUsersBox
