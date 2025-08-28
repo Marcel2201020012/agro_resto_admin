@@ -63,7 +63,7 @@ export const Closing = () => {
 
     useEffect(() => {
         const allowed =
-            (shiftType === "morning" && (hour >= 16 || hour <= 5)) ||
+            (shiftType === "morning" && (hour >= 15 || hour <= 6)) ||
             (shiftType === "night" && hour >= 6 && hour <= 15);
 
         setIsAllowed(allowed);
@@ -74,15 +74,15 @@ export const Closing = () => {
         to.setHours(14, 59, 59, 999);
     } else if (shiftType === "night") {
         if (hour >= 15) {
-            // Night shift starting today 16:00
+            // Night shift starting today 15:00
             from.setHours(15, 0, 0, 0);
             to.setDate(to.getDate() + 1); // next day
-            to.setHours(4, 59, 59, 999);
+            to.setHours(5, 59, 59, 999);
         } else {
             // Early morning of night shift (past midnight, before 06:00)
-            from.setDate(from.getDate() - 1); // yesterday 16:00
+            from.setDate(from.getDate() - 1); // yesterday 15:00
             from.setHours(15, 0, 0, 0);
-            to.setHours(4, 59, 59, 999); // today
+            to.setHours(5, 59, 59, 999); // today
         }
     }
 
@@ -369,7 +369,7 @@ export const Closing = () => {
                     <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
                         <h2 className="text-lg font-bold mb-4 text-red-600">⚠️ Warning: </h2>
                         <p>
-                            Performing <span className="font-bold">Cashier Closing</span>
+                            Performing <span className="font-bold">{shiftTitle}</span>
                             <span className="text-gray-700"> will <span className="font-bold">cancel all unfinished orders</span>.</span>
                         </p>
                         <p>
