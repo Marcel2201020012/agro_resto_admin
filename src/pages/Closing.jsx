@@ -35,7 +35,6 @@ export const Closing = () => {
 
     // Determine if it's morning or night shift
     const shiftDocRef = doc(db, "app_state", "shift");
-    const lastShiftRef = doc(db, "app_state", "lastClosed");
     const [lastClosed, setIsLastClosed] = useState(null);
     const [shiftType, setShiftType] = useState(null);
     const summaryTitle = shiftType === "morning" ? "Morning Shift" : "Night Shift";
@@ -44,12 +43,12 @@ export const Closing = () => {
     useEffect(() => {
         const initializeLastClosed = async () => {
             try {
-                const docSnap = await getDoc(lastShiftRef);
+                const docSnap = await getDoc(shiftDocRef);
 
                 if (!docSnap.exists() || !docSnap.data().lastClosed) {
                     // Initialize lastClosed to current time
                     await setDoc(
-                        lastShiftRef,
+                        shiftDocRef,
                         { lastClosed: Timestamp.fromDate(new Date()) },
                         { merge: true } // merge so other fields aren't overwritten
                     );
@@ -112,7 +111,7 @@ export const Closing = () => {
     }
 
     useEffect(() => {
-        const unsub = onSnapshot(lastShiftRef, (doc) => {
+        const unsub = onSnapshot(shiftDocRef, (doc) => {
             const data = doc.data();
             const lastClosed = data?.lastClosed?.toDate ? data.lastClosed.toDate() : new Date(0);
             setIsLastClosed(lastClosed);
@@ -206,8 +205,8 @@ export const Closing = () => {
     }
 
     const handleShiftClosing = async () => {
-        setIsProcessing(true);
         if (!isAllowed) return;
+        setIsProcessing(true);
 
         // Update shift type after closing
         const closingShift = shiftType;
@@ -254,12 +253,11 @@ export const Closing = () => {
             }
 
             // Update the shift type document
-            await updateDoc(shiftDocRef, { type: newShift });
+            await updateDoc(shiftDocRef, {
+                type: newShift,
+                lastClosed: new Date()
+            });
             setShiftType(newShift);
-
-            // Update the lastClosed document
-            await updateDoc(lastShiftRef, { lastClosed: new Date() });
-            setIsLastClosed(new Date());
 
         } catch (error) {
             console.log("Error updating pending status: ", error)
@@ -430,7 +428,7 @@ export const Closing = () => {
                             Only proceed if you intend to <span className="font-bold text-red-600">cancel all pending transactions</span>.
                         </p>
                         <div className="mt-6 flex justify-center gap-4">
-                            {isProcessing ? (<><button
+                            {!isProcessing ? (<><button
                                 onClick={handleShiftClosing}
                                 className="bg-green-500 text-white px-4 py-2 rounded"
                             >
