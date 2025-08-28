@@ -22,6 +22,7 @@ export const Closing = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAllowed, setIsAllowed] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const formatIDR = new Intl.NumberFormat("id-ID");
     const [summary, setSummary] = useState({
@@ -171,7 +172,7 @@ export const Closing = () => {
     }
 
     const handleShiftClosing = async () => {
-        console.log("ok");
+        setIsProcessing(true);
         if (!isAllowed) return;
         // Update shift type after closing
         const newShift = shiftType === "morning" ? "night" : "morning";
@@ -376,15 +377,16 @@ export const Closing = () => {
                             Only proceed if you intend to <span className="font-bold text-red-600">cancel all pending transactions</span>.
                         </p>
                         <div className="mt-6 flex justify-center gap-4">
-                            <button
+                            {isProcessing ? (<><button
                                 onClick={handleShiftClosing}
                                 className="bg-green-500 text-white px-4 py-2 rounded"
                             >
                                 Yes
                             </button>
-                            <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setShowModal(false)}>
-                                No
-                            </button>
+                                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setShowModal(false)}>
+                                    No
+                                </button></>) : (<span>Loading...</span>)}
+
                         </div>
                     </div>
                 </div>
