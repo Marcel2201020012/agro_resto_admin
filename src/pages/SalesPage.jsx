@@ -66,10 +66,13 @@ export const SalesPage = () => {
 
                 for (const t of rows) {
                     const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
-                    if (!created) continue; // skip bad/missing docs
+                    if (!created) continue;
+
+                    // ✅ skip non-finished orders entirely
+                    if (t.status !== "Order Finished") continue;
 
                     const key = dayKey(created);
-                    const totalNum = Number(t.total) || 0; // handle string or number
+                    const totalNum = Number(t.total) || 0;
                     income += totalNum;
 
                     const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
@@ -77,7 +80,6 @@ export const SalesPage = () => {
                     dEntry.count += 1;
                     perDay.set(key, dEntry);
 
-                    // orderDetails can be an array (your structure) or object
                     const items = Array.isArray(t.orderDetails)
                         ? t.orderDetails
                         : Object.values(t.orderDetails || {});

@@ -29,8 +29,8 @@ const formatIDR = new Intl.NumberFormat("id-ID");
 export const SalesPage = () => {
     const navigate = useNavigate();
     const today = new Date();
-    const weekAgo = new Date();
-    weekAgo.setDate(today.getDate() - 7);
+    const weekAgo = new Date(); //one day after today to save write quota
+    // weekAgo.setDate(today.getDate() - 7);
 
     const [from, setFrom] = useState(weekAgo.toISOString().slice(0, 10));
     const [to, setTo] = useState(today.toISOString().slice(0, 10));
@@ -68,8 +68,11 @@ export const SalesPage = () => {
                     const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
                     if (!created) continue;
 
+                    // ✅ skip non-finished orders entirely
+                    if (t.status !== "Order Finished") continue;
+
                     const key = dayKey(created);
-                    const totalNum = t.status === "Order Finished" ? Number(t.total) || 0 : 0;
+                    const totalNum = Number(t.total) || 0;
                     income += totalNum;
 
                     const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
