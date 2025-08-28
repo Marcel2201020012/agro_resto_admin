@@ -86,12 +86,34 @@ export const Closing = () => {
     };
 
     useEffect(() => {
-        const allowed =
-            (shiftType === "morning" && (hour < 6 || hour >= 15)) ||
-            (shiftType === "night" && hour >= 6 && hour < 15);
+        const checkTime = () => {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const currentTime = hour * 60 + minute;
 
-        setIsAllowed(allowed);
-    }, [shiftType, hour]);
+            let allowed = false;
+
+            if (shiftType === "morning") {
+                // Morning: 11:35 - 06:00 (next day)
+                allowed = currentTime >= 695 || currentTime < 360;
+            } else if (shiftType === "night") {
+                // Night: 20:35 - 11:35 (next day)
+                allowed = currentTime >= 1235 || currentTime < 695;
+            }
+
+            setIsAllowed(allowed);
+        };
+
+        // Run immediately
+        checkTime();
+
+        // Set interval to check every minute (60000ms)
+        const interval = setInterval(checkTime, 60000);
+
+        // Cleanup
+        return () => clearInterval(interval);
+    }, [shiftType]);
 
     if (shiftType === "morning") {
         from.setHours(6, 0, 0, 0);
