@@ -64,8 +64,8 @@ export const Closing = () => {
 
     useEffect(() => {
         const allowed =
-            (shiftType === "morning" && (hour >= 15 || hour <= 6)) ||
-            (shiftType === "night" && hour >= 6 && hour <= 15);
+            (shiftType === "morning" && (hour < 6 || hour >= 15)) ||
+            (shiftType === "night" && hour >= 6 && hour < 15);
 
         setIsAllowed(allowed);
     }, [shiftType, hour]);
