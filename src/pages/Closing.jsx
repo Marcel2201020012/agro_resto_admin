@@ -35,9 +35,33 @@ export const Closing = () => {
 
     // Determine if it's morning or night shift
     const shiftDocRef = doc(db, "app_state", "shift");
+    const lastShiftRef = doc(db, "app_state", "lastClosed");
+    const [lastClosed, setIsLastClosed] = useState(null);
     const [shiftType, setShiftType] = useState(null);
     const summaryTitle = shiftType === "morning" ? "Morning Shift" : "Night Shift";
     const shiftTitle = shiftType === "morning" ? "Shift Closing" : "Cashier Closing";
+
+    useEffect(() => {
+        const initializeLastClosed = async () => {
+            try {
+                const docSnap = await getDoc(lastShiftRef);
+
+                if (!docSnap.exists() || !docSnap.data().lastClosed) {
+                    // Initialize lastClosed to current time
+                    await setDoc(
+                        lastShiftRef,
+                        { lastClosed: Timestamp.fromDate(new Date()) },
+                        { merge: true } // merge so other fields aren't overwritten
+                    );
+                    console.log("lastClosed initialized to current time");
+                }
+            } catch (error) {
+                console.error("Error initializing lastClosed:", error);
+            }
+        };
+
+        initializeLastClosed();
+    }, []); // run only once on mount
 
     useEffect(() => {
         const unsub = onSnapshot(shiftDocRef, (snap) => {
@@ -88,6 +112,16 @@ export const Closing = () => {
     }
 
     useEffect(() => {
+        const unsub = onSnapshot(lastShiftRef, (doc) => {
+            const data = doc.data();
+            const lastClosed = data?.lastClosed?.toDate ? data.lastClosed.toDate() : new Date(0);
+            setIsLastClosed(lastClosed);
+        });
+
+        return () => unsub(); // cleanup on unmount
+    }, []);
+
+    useEffect(() => {
         const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
             const orderData = snapshot.docs.map((doc) => ({
                 id: doc.id,
@@ -104,14 +138,14 @@ export const Closing = () => {
             .filter(order => {
                 const createdAt = order.createdAt?.toDate();
                 if (!createdAt) return false;
-                return createdAt >= from && createdAt <= to;
+                return createdAt >= lastClosed && createdAt <= to;
             })
             .sort((a, b) => {
                 const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
                 if (statusComparison !== 0) return statusComparison;
                 return b.createdAt.toDate() - a.createdAt.toDate();
             });
-    }, [orders, from, to]);
+    }, [orders, lastClosed, to]);
 
 
     const getOrdersByStatus = status => {
@@ -136,7 +170,7 @@ export const Closing = () => {
                 const qRef = query(
                     collection(db, "transaction_id"),
                     orderBy("createdAt", "asc"),
-                    where("createdAt", ">=", Timestamp.fromDate(from)),
+                    where("createdAt", ">=", Timestamp.fromDate(lastClosed)),
                     where("createdAt", "<=", Timestamp.fromDate(to))
                 );
 
@@ -165,7 +199,7 @@ export const Closing = () => {
                 console.error(e);
             }
         })();
-    }, [from, to]);
+    }, [lastClosed, to]);
 
     const handleShiftClose = () => {
         setShowModal(true);
@@ -174,21 +208,31 @@ export const Closing = () => {
     const handleShiftClosing = async () => {
         setIsProcessing(true);
         if (!isAllowed) return;
+
         // Update shift type after closing
+        const closingShift = shiftType;
         const newShift = shiftType === "morning" ? "night" : "morning";
-        await updateDoc(shiftDocRef, { type: newShift });
-        setShiftType(newShift);
+        // await updateDoc(shiftDocRef, { type: newShift });
+        // setShiftType(newShift);
 
         try {
-            console.log("running expire logic")
-
             const q = query(
                 collection(db, "transaction_id"),
-                where("createdAt", ">=", from),
+                where("createdAt", ">=", lastClosed),
                 where("createdAt", "<=", to)
             );
 
             const snapshot = await getDocs(q);
+
+            //add shiftType into every transactions
+            const addShiftUpdates = snapshot.docs.map(docSnap =>
+                updateDoc(docSnap.ref, { shiftType: closingShift })
+            );
+
+            if (addShiftUpdates.length) {
+                await Promise.all(addShiftUpdates);
+                console.log(`Added shiftType "${closingShift}" to ${addShiftUpdates.length} transactions`);
+            }
 
             // Keep doc snapshots for updates
             const filteredDocs = snapshot.docs.filter(doc =>
@@ -208,6 +252,15 @@ export const Closing = () => {
                 await Promise.all(updates);
                 console.log(`Updated ${updates.length} orders`);
             }
+
+            // Update the shift type document
+            await updateDoc(shiftDocRef, { type: newShift });
+            setShiftType(newShift);
+
+            // Update the lastClosed document
+            await updateDoc(lastShiftRef, { lastClosed: new Date() });
+            setIsLastClosed(new Date());
+
         } catch (error) {
             console.log("Error updating pending status: ", error)
         }
