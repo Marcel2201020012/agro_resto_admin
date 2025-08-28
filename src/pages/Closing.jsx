@@ -118,40 +118,46 @@ export const Closing = () => {
     useEffect(() => {
         const checkTime = () => {
             const now = new Date();
-            const hour = now.getHours();
-            const minute = now.getMinutes();
-            const currentTime = hour * 60 + minute; // total minutes
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
             let allowed = false;
 
-            // Define shift windows in minutes
+            // Shift windows in minutes
             const morningStart = 11 * 60 + 35; // 11:35
-            const morningEnd = 6 * 60; // 06:00 next day
-            const nightStart = 20 * 60 + 35; // 20:35
-            const nightEnd = 11 * 60 + 35; // 11:35 next day
+            const morningEnd = 20 * 60 + 35;   // 20:35
+            const nightStart = 20 * 60 + 35;   // 20:35
+            const nightEnd = 6 * 60;           // 06:00 next day
 
-            // Helper: check if time is in a "wrapped" interval (crosses midnight)
             const isInInterval = (start, end, time) => {
                 if (start <= end) return time >= start && time < end;
-                return time >= start || time < end;
+                return time >= start || time < end; // wraps around midnight
             };
 
-            // Check shift time
             if (shiftType === "morning") {
-                allowed = isInInterval(morningStart, morningEnd, currentTime);
+                allowed = isInInterval(morningStart, morningEnd, currentMinutes);
             } else if (shiftType === "night") {
-                allowed = isInInterval(nightStart, nightEnd, currentTime);
+                allowed = isInInterval(nightStart, nightEnd, currentMinutes);
             }
 
-            // Check lastClosed: disable if already closed during this shift
+            // Check lastClosed
             if (lastClosed instanceof Date) {
-                const lastClosedTime = lastClosed.getHours() * 60 + lastClosed.getMinutes();
+                const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
                 let lastClosedInShift = false;
 
                 if (shiftType === "morning") {
-                    lastClosedInShift = isInInterval(morningStart, morningEnd, lastClosedTime);
+                    // Only check today
+                    if (lastClosed.toDateString() === now.toDateString()) {
+                        lastClosedInShift = isInInterval(morningStart, morningEnd, lastClosedMinutes);
+                    }
                 } else if (shiftType === "night") {
-                    lastClosedInShift = isInInterval(nightStart, nightEnd, lastClosedTime);
+                    // Night shift may start yesterday
+                    const nightStartDate = new Date(now);
+                    nightStartDate.setHours(20, 35, 0, 0);
+                    const nightEndDate = new Date(nightStartDate);
+                    nightEndDate.setDate(nightStartDate.getDate() + 1);
+                    nightEndDate.setHours(6, 0, 0, 0);
+
+                    lastClosedInShift = lastClosed >= nightStartDate && lastClosed < nightEndDate;
                 }
 
                 if (lastClosedInShift) allowed = false;
