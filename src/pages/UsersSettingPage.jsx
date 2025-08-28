@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { ToolsBox } from "../components/ToolsBox";
 
-import menuImg from "../assets/tools_img/menuImg.svg"
-import userImg from "../assets/tools_img/user.png"
+import addUserImg from "../assets/user_menu_img/add.png"
+import editUserImg from "../assets/user_menu_img/edit.png"
 
 import { Background } from "../components/Background";
 import bg from "../assets/bg/bg_1.png"
@@ -21,8 +21,8 @@ export const UserSettingsPage = () => {
                     </div>
 
                     <div className="relative flex gap-8 p-4">
-                        <ToolsBox img={userImg} title={"Add Users"} route={"/addUsers"} />
-                        <ToolsBox img={menuImg} title={"Edit Users"} route={"/editUsers"} />
+                        <ToolsBox img={addUserImg} title={"Add Users"} route={"/addUsers"} />
+                        <ToolsBox img={editUserImg} title={"Edit Users"} route={"/editUsers"} />
                     </div>
                 </div>
             </main>

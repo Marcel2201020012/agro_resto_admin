@@ -6,6 +6,7 @@ import { ToolsBoxSales } from "../components/ToolBoxSales";
 import settingImg from "../assets/tools_img/settings.png"
 import orderImg from "../assets/tools_img/orderImg.svg"
 import salesImg from "../assets/tools_img/salesImg.png"
+import closingImg from "../assets/tools_img/closing.png"
 
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
@@ -68,7 +69,7 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
-                        <ToolsBox img={orderImg} title={shiftTitle} route="/closing" />
+                        <ToolsBox img={closingImg} title={shiftTitle} route="/closing" />
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
                         {/* <div
                             onClick={handleShowModal}

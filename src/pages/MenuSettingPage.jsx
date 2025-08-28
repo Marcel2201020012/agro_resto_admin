@@ -1,10 +1,11 @@
-import mainDish from "../assets/edit_menu_img/main_dish.svg"
-import sideDish from "../assets/edit_menu_img/side_dish.svg"
-
 import { useNavigate } from "react-router-dom";
 import { ToolsBox } from "../components/ToolsBox";
 import { Background } from "../components/Background";
 import { useState } from "react";
+
+import addMenuImg from "../assets/edit_menu_img/add_menu.png"
+import editMenuImg from "../assets/edit_menu_img/edit_menu.png"
+import resetBestSellerImg from "../assets/edit_menu_img/reset_best_seller.png"
 
 import { db } from "../../firebase/firebaseConfig";
 import { getDocs, updateDoc, collection, doc } from "firebase/firestore";
@@ -60,12 +61,12 @@ export const MenuSettingPage = () => {
 
                     <div className="relative flex gap-8 p-4">
                         {userData?.role !== "user" &&
-                            <ToolsBox img={mainDish} title={"Add Menu"} route={"/addMenu"}></ToolsBox>
+                            <ToolsBox img={addMenuImg} title={"Add Menu"} route={"/addMenu"}></ToolsBox>
                         }
-                        <ToolsBox img={sideDish} title={"Edit Menu"} route={"/chooseMenu"}></ToolsBox>
+                        <ToolsBox img={editMenuImg} title={"Edit Menu"} route={"/chooseMenu"}></ToolsBox>
                         {userData?.role !== "user" &&
                             <div onClick={handleResetBestSeller}>
-                                <ToolsBox img={sideDish} title={"Reset Best Seller"} route={""}></ToolsBox>
+                                <ToolsBox img={resetBestSellerImg} title={"Reset Best Seller"} route={""}></ToolsBox>
                             </div>
                         }
                     </div>
