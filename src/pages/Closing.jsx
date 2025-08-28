@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { OrderBox } from "../components/OrderBox";
-import { doc, collection, updateDoc, onSnapshot, getDocs, orderBy, query, Timestamp, where } from "firebase/firestore";
+import { doc, collection, updateDoc, onSnapshot, getDocs, getDoc, setDoc, orderBy, query, Timestamp, where } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
@@ -85,35 +85,86 @@ export const Closing = () => {
         'Order Finished': 4
     };
 
+    // useEffect(() => {
+    //     const checkTime = () => {
+    //         const now = new Date();
+    //         const hour = now.getHours();
+    //         const minute = now.getMinutes();
+    //         const currentTime = hour * 60 + minute;
+
+    //         let allowed = false;
+
+    //         if (shiftType === "morning") {
+    //             // Morning: 11:35 - 06:00 (next day)
+    //             allowed = currentTime >= 695 || currentTime < 360;
+    //         } else if (shiftType === "night") {
+    //             // Night: 20:35 - 11:35 (next day)
+    //             allowed = currentTime >= 1235 || currentTime < 695;
+    //         }
+
+    //         setIsAllowed(allowed);
+    //     };
+
+    //     // Run immediately
+    //     checkTime();
+
+    //     // Set interval to check every minute (60000ms)
+    //     const interval = setInterval(checkTime, 60000);
+
+    //     // Cleanup
+    //     return () => clearInterval(interval);
+    // }, [shiftType]);
+
     useEffect(() => {
         const checkTime = () => {
             const now = new Date();
             const hour = now.getHours();
             const minute = now.getMinutes();
-            const currentTime = hour * 60 + minute;
+            const currentTime = hour * 60 + minute; // total minutes
 
             let allowed = false;
 
+            // Define shift windows in minutes
+            const morningStart = 11 * 60 + 35; // 11:35
+            const morningEnd = 6 * 60; // 06:00 next day
+            const nightStart = 20 * 60 + 35; // 20:35
+            const nightEnd = 11 * 60 + 35; // 11:35 next day
+
+            // Helper: check if time is in a "wrapped" interval (crosses midnight)
+            const isInInterval = (start, end, time) => {
+                if (start <= end) return time >= start && time < end;
+                return time >= start || time < end;
+            };
+
+            // Check shift time
             if (shiftType === "morning") {
-                // Morning: 11:35 - 06:00 (next day)
-                allowed = currentTime >= 695 || currentTime < 360;
+                allowed = isInInterval(morningStart, morningEnd, currentTime);
             } else if (shiftType === "night") {
-                // Night: 20:35 - 11:35 (next day)
-                allowed = currentTime >= 1235 || currentTime < 695;
+                allowed = isInInterval(nightStart, nightEnd, currentTime);
+            }
+
+            // Check lastClosed: disable if already closed during this shift
+            if (lastClosed instanceof Date) {
+                const lastClosedTime = lastClosed.getHours() * 60 + lastClosed.getMinutes();
+                let lastClosedInShift = false;
+
+                if (shiftType === "morning") {
+                    lastClosedInShift = isInInterval(morningStart, morningEnd, lastClosedTime);
+                } else if (shiftType === "night") {
+                    lastClosedInShift = isInInterval(nightStart, nightEnd, lastClosedTime);
+                }
+
+                if (lastClosedInShift) allowed = false;
             }
 
             setIsAllowed(allowed);
         };
 
-        // Run immediately
         checkTime();
-
-        // Set interval to check every minute (60000ms)
         const interval = setInterval(checkTime, 60000);
 
-        // Cleanup
         return () => clearInterval(interval);
-    }, [shiftType]);
+    }, [shiftType, lastClosed]);
 
     if (shiftType === "morning") {
         from.setHours(6, 0, 0, 0);
@@ -186,6 +237,7 @@ export const Closing = () => {
     const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
 
     useEffect(() => {
+        if (!lastClosed) return;
         (async () => {
             try {
                 const qRef = query(
