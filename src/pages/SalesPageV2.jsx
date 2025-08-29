@@ -158,7 +158,7 @@ export const SalesPage = () => {
                         </div>
                         <div>
                             <div className="text-gray-500 text-sm font-medium">Total Income</div>
-                            <div className="text-xs text-gray-400 italic">*Before Tax</div>
+                            <div className="text-xs text-gray-400 italic">*Tax Included</div>
                             <div className="text-2xl font-bold text-gray-800">
                                 Rp {formatIDR.format(summary.totalIncome)}
                             </div>

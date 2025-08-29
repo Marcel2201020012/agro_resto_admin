@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { OrderBox } from "../components/OrderBox";
-import { doc, collection, onSnapshot, getDocs, orderBy, query, Timestamp, where } from "firebase/firestore";
+import { doc, collection, onSnapshot, getDocs, orderBy, query, Timestamp, where, writeBatch } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
@@ -281,7 +281,7 @@ export const Closing = () => {
                         </div>
                         <div>
                             <div className="text-gray-500 text-sm font-medium">Total Income</div>
-                            <div className="text-xs text-gray-400 italic">*Before Tax</div>
+                            <div className="text-xs text-gray-400 italic">*Tax Included</div>
                             <div className="text-2xl font-bold text-gray-800">
                                 Rp {formatIDR.format(summary.totalIncome)}
                             </div>
