@@ -412,7 +412,7 @@ export const OrderDetails = () => {
                                 style: 'currency',
                                 currency: 'IDR',
                                 minimumFractionDigits: 0
-                            }).format(Number(result.cash - (result.total - 2 * result.total * 0.1)))}</span>
+                            }).format(Number(result.cash - (result.total)))}</span>
                         </div>
                     )}
 
@@ -425,7 +425,7 @@ export const OrderDetails = () => {
                             style: 'currency',
                             currency: 'IDR',
                             minimumFractionDigits: 0
-                        }).format(Number(result.total - 2 * result.total * 0.1))}
+                        }).format(Number(result.total))}
                     </p>
                 </div>
             </div>

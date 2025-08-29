@@ -52,7 +52,7 @@ export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
                     <span className="w-4 text-center">:</span>
                     <span className="flex-1 text-right">
                         {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
-                            .format(Number(result.total))}
+                            .format(Number(result.total - 2 * result.total * 0.1))}
                     </span>
                 </div>
             </div>
@@ -85,7 +85,7 @@ export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
                     <span className="w-4 text-center">:</span>
                     <span className="flex-1 text-right">
                         {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
-                            .format(Number(result.total - 2 * result.total * 0.1))}
+                            .format(Number(result.total))}
                     </span>
                 </div>
             </div>
@@ -112,7 +112,7 @@ export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
                         <span className="w-4 text-center">:</span>
                         <span className="flex-1 text-right">
                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
-                                .format(Number(result.cash - (result.total - 2 * result.total * 0.1)))}
+                                .format(Number(result.cash - (result.total)))}
                         </span>
                     </div>
                 </div>
