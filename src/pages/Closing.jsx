@@ -102,19 +102,16 @@ export const Closing = () => {
                 }
 
                 if (shiftType === "night") {
-                    // Night spans across midnight → check if lastClosed happened between 20:35 and 06:00 next day
-                    const nightStart = new Date(now);
-                    nightStart.setHours(20, 35, 0, 0);
-                    const nightEnd = new Date(nightStart);
-                    nightEnd.setDate(nightEnd.getDate() + 1);
-                    nightEnd.setHours(6, 0, 0, 0);
+                    const nightStartMinutes = 20 * 60 + 35; // 20:35
+                    const nightEndMinutes = 6 * 60;        // 06:00
+                    const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
 
-                    if (lastClosed >= nightStart && lastClosed < nightEnd) {
+                    // Wrap-around logic for night
+                    if (shiftType === "night" && (lastClosedMinutes >= nightStartMinutes || lastClosedMinutes < nightEndMinutes)) {
                         allowed = false;
                     }
                 }
             }
-
 
             setIsAllowed(allowed);
         };
