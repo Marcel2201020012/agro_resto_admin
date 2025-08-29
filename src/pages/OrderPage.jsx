@@ -29,8 +29,8 @@ export const OrderPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const today = new Date();
-    const [from, setFrom] = useState(toStartOfDay(today));
-    const [to, setTo] = useState(toEndOfDay(today));
+    const [from, setFrom] = useState(today.toISOString().slice(0, 10));
+    const [to, setTo] = useState(today.toISOString().slice(0, 10));
 
     const STATUS_PRIORITY = {
         'Waiting For Payment On Cashier': 1,
@@ -51,69 +51,24 @@ export const OrderPage = () => {
         return () => unsub();
     }, []);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const qRef = query(
-                    collection(db, "transaction_id"),
-                    where("createdAt", ">=", Timestamp.fromDate(from)),
-                    where("createdAt", "<=", Timestamp.fromDate(to)),
-                    orderBy("createdAt", "asc")
-                );
-
-                const snap = await getDocs(qRef);
-                const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-                let income = 0;
-                const foodsMap = new Map();
-                const perDay = new Map();
-
-                for (const t of rows) {
-                    const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
-                    if (!created) continue;
-
-                    const key = dayKey(created);
-                    const totalNum = Number(t.total) || 0;
-                    income += totalNum;
-
-                    const dEntry = perDay.get(key) || { date: created, income: 0, count: 0 };
-                    dEntry.income += totalNum;
-                    dEntry.count += 1;
-                    perDay.set(key, dEntry);
-
-                    const items = Array.isArray(t.orderDetails)
-                        ? t.orderDetails
-                        : Object.values(t.orderDetails || {});
-
-                    for (const it of items) {
-                        const name = it?.name ?? "Unknown";
-                        const qty = Number(it?.jumlah) || 0;
-                        foodsMap.set(name, (foodsMap.get(name) || 0) + qty);
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    }, [from, to]);
-
     const filteredSortedOrders = useMemo(() => {
+        const start = toStartOfDay(new Date(from));
+        const end = toEndOfDay(new Date(to));
+
         return [...orders]
             .filter(order => {
                 const createdAt = order.createdAt?.toDate();
                 if (!createdAt) return false;
 
                 // Compare with from/to
-                return createdAt >= from && createdAt <= to;
+                return createdAt >= start && createdAt <= end;
             })
             .sort((a, b) => {
                 const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
                 if (statusComparison !== 0) return statusComparison;
                 return b.createdAt.toDate() - a.createdAt.toDate();
             });
-    }, [orders, from, to]);
+    }, [orders]);
 
     const getOrdersByStatus = status => {
         const statusOrders = filteredSortedOrders.filter(order => order.status === status);
@@ -219,7 +174,7 @@ export const OrderPage = () => {
                         <input
                             type="date"
                             className="border bg-white rounded-xl px-3 py-2"
-                            value={from.toISOString().slice(0, 10)} // convert Date to yyyy-mm-dd string
+                            value={from} // convert Date to yyyy-mm-dd string
                             onChange={(e) => setFrom(new Date(e.target.value))} // convert string back to Date
                         />
                     </div>
@@ -228,7 +183,7 @@ export const OrderPage = () => {
                         <input
                             type="date"
                             className="border bg-white rounded-xl px-3 py-2"
-                            value={to.toISOString().slice(0, 10)} // convert Date to yyyy-mm-dd string
+                            value={to} // convert Date to yyyy-mm-dd string
                             onChange={(e) => setTo(new Date(e.target.value))} // convert string back to Date
                         />
                     </div>
