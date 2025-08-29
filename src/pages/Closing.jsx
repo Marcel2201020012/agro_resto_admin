@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { OrderBox } from "../components/OrderBox";
-import { doc, collection, updateDoc, onSnapshot, getDocs, getDoc, setDoc, orderBy, query, Timestamp, where } from "firebase/firestore";
+import { doc, collection, onSnapshot, getDocs, orderBy, query, Timestamp, where, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
@@ -30,8 +30,14 @@ export const Closing = () => {
         totalTransactions: 0,
     });
 
-    const now = new Date();
-    const hour = now.getHours();
+    const STATUS_PRIORITY = {
+        'Waiting For Payment On Cashier': 1,
+        'Preparing Food': 2,
+        'Order Canceled': 3,
+        'Order Finished': 4
+    };
+
+    const initialNow = useMemo(() => new Date(), []);
 
     // Determine if it's morning or night shift
     const shiftDocRef = doc(db, "app_state", "shift");
@@ -40,217 +46,87 @@ export const Closing = () => {
     const summaryTitle = shiftType === "morning" ? "Morning Shift" : "Night Shift";
     const shiftTitle = shiftType === "morning" ? "Shift Closing" : "Cashier Closing";
 
-    useEffect(() => {
-        const initializeLastClosed = async () => {
-            try {
-                const docSnap = await getDoc(shiftDocRef);
-
-                if (!docSnap.exists() || !docSnap.data().lastClosed) {
-                    // Initialize lastClosed to current time
-                    await setDoc(
-                        shiftDocRef,
-                        { lastClosed: Timestamp.fromDate(new Date()) },
-                        { merge: true } // merge so other fields aren't overwritten
-                    );
-                    console.log("lastClosed initialized to current time");
-                }
-            } catch (error) {
-                console.error("Error initializing lastClosed:", error);
-            }
-        };
-
-        initializeLastClosed();
-    }, []); // run only once on mount
-
+    //fetch shiftType and lastClosed from firestore
     useEffect(() => {
         const unsub = onSnapshot(shiftDocRef, (snap) => {
             if (snap.exists()) {
-                setShiftType(snap.data().type);
+                const data = snap.data();
+                setShiftType(data.type);
+                setIsLastClosed(data?.lastClosed?.toDate ? data.lastClosed.toDate() : new Date(0));
+
             }
         }, (err) => {
             console.error("Error listening to shift doc:", err);
         });
 
-        return () => unsub(); // cleanup listener
+        return () => unsub();
     }, []);
 
-    // Compute from and to including the day
-    let from = new Date();
-    let to = new Date();
-
-    const STATUS_PRIORITY = {
-        'Waiting For Payment On Cashier': 1,
-        'Preparing Food': 2,
-        'Order Canceled': 3,
-        'Order Finished': 4
-    };
-
-    // useEffect(() => {
-    //     const checkTime = () => {
-    //         const now = new Date();
-    //         const hour = now.getHours();
-    //         const minute = now.getMinutes();
-    //         const currentTime = hour * 60 + minute;
-
-    //         let allowed = false;
-
-    //         if (shiftType === "morning") {
-    //             // Morning: 11:35 - 06:00 (next day)
-    //             allowed = currentTime >= 695 || currentTime < 360;
-    //         } else if (shiftType === "night") {
-    //             // Night: 20:35 - 11:35 (next day)
-    //             allowed = currentTime >= 1235 || currentTime < 695;
-    //         }
-
-    //         setIsAllowed(allowed);
-    //     };
-
-    //     // Run immediately
-    //     checkTime();
-
-    //     // Set interval to check every minute (60000ms)
-    //     const interval = setInterval(checkTime, 60000);
-
-    //     // Cleanup
-    //     return () => clearInterval(interval);
-    // }, [shiftType]);
-
+    //set allowed logic (for when user are allowed to press the close button)
     useEffect(() => {
         const checkTime = () => {
+            if (!shiftType) return;
+
             const now = new Date();
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
             let allowed = false;
 
-            // Shift windows in minutes
-            const morningStart = 11 * 60 + 35; // 11:35
-            const morningEnd = 20 * 60 + 35;   // 20:35
-            const nightStart = 20 * 60 + 35;   // 20:35
-            const nightEnd = 6 * 60;           // 06:00 next day
-
-            const isInInterval = (start, end, time) => {
-                if (start <= end) return time >= start && time < end;
-                return time >= start || time < end; // wraps around midnight
-            };
+            // thresholds in minutes
+            const morningThreshold = 11 * 60 + 35; // 11:35
+            const nightThreshold = 20 * 60 + 35;   // 20:35
 
             if (shiftType === "morning") {
-                allowed = isInInterval(morningStart, morningEnd, currentMinutes);
+                // only allow closing if time >= 11:35
+                if (currentMinutes >= morningThreshold) {
+                    allowed = true;
+                }
             } else if (shiftType === "night") {
-                allowed = isInInterval(nightStart, nightEnd, currentMinutes);
+                // allow closing if time >= 20:35 OR (past midnight until indefinetly)
+                if (currentMinutes >= nightThreshold || currentMinutes > 0) {
+                    allowed = true;
+                }
             }
 
-            // Check lastClosed
+            // prevent double-close within the same shift
             if (lastClosed instanceof Date) {
-                const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
-                let lastClosedInShift = false;
+                const sameDay = lastClosed.toDateString() === now.toDateString();
 
-                if (shiftType === "morning") {
-                    // Only check today
-                    if (lastClosed.toDateString() === now.toDateString()) {
-                        lastClosedInShift = isInInterval(morningStart, morningEnd, lastClosedMinutes);
-                    }
-                } else if (shiftType === "night") {
-                    // Night shift may start yesterday
-                    const nightStartDate = new Date(now);
-                    nightStartDate.setHours(20, 35, 0, 0);
-                    const nightEndDate = new Date(nightStartDate);
-                    nightEndDate.setDate(nightStartDate.getDate() + 1);
-                    nightEndDate.setHours(6, 0, 0, 0);
-
-                    lastClosedInShift = lastClosed >= nightStartDate && lastClosed < nightEndDate;
+                if (shiftType === "morning" && sameDay && lastClosed.getHours() >= 6 && lastClosed.getHours() < 12) {
+                    allowed = false;
                 }
+                if (shiftType === "night") {
+                    // Night spans across midnight → check if lastClosed happened between 20:35 and 06:00
+                    const nightStart = new Date(now);
+                    nightStart.setHours(20, 35, 0, 0);
+                    const nightEnd = new Date(nightStart);
+                    nightEnd.setDate(nightEnd.getDate() + 1);
+                    nightEnd.setHours(6, 0, 0, 0);
 
-                if (lastClosedInShift) allowed = false;
+                    if (lastClosed >= nightStart && lastClosed < nightEnd) {
+                        allowed = false;
+                    }
+                }
             }
 
             setIsAllowed(allowed);
         };
 
         checkTime();
-        const interval = setInterval(checkTime, 60000);
-
+        const interval = setInterval(checkTime, 60_000); // check every minute
         return () => clearInterval(interval);
     }, [shiftType, lastClosed]);
 
-    if (shiftType === "morning") {
-        from.setHours(6, 0, 0, 0);
-        to.setHours(14, 59, 59, 999);
-    } else if (shiftType === "night") {
-        if (hour >= 15) {
-            // Night shift starting today 15:00
-            from.setHours(15, 0, 0, 0);
-            to.setDate(to.getDate() + 1); // next day
-            to.setHours(5, 59, 59, 999);
-        } else {
-            // Early morning of night shift (past midnight, before 06:00)
-            from.setDate(from.getDate() - 1); // yesterday 15:00
-            from.setHours(15, 0, 0, 0);
-            to.setHours(5, 59, 59, 999); // today
-        }
-    }
-
-    useEffect(() => {
-        const unsub = onSnapshot(shiftDocRef, (doc) => {
-            const data = doc.data();
-            const lastClosed = data?.lastClosed?.toDate ? data.lastClosed.toDate() : new Date(0);
-            setIsLastClosed(lastClosed);
-        });
-
-        return () => unsub(); // cleanup on unmount
-    }, []);
-
-    useEffect(() => {
-        const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
-            const orderData = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setOrder(orderData);
-            setIsLoading(false)
-        });
-        return () => unsub();
-    }, []);
-
-    const filteredSortedOrders = useMemo(() => {
-        return orders
-            .filter(order => {
-                const createdAt = order.createdAt?.toDate();
-                if (!createdAt) return false;
-                return createdAt >= lastClosed && createdAt <= to;
-            })
-            .sort((a, b) => {
-                const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
-                if (statusComparison !== 0) return statusComparison;
-                return b.createdAt.toDate() - a.createdAt.toDate();
-            });
-    }, [orders, lastClosed, to]);
-
-
-    const getOrdersByStatus = status => {
-        const statusOrders = filteredSortedOrders.filter(order => order.status === status);
-
-        let heightClass = "";
-        if (statusOrders.length > 0 && statusOrders.length < 2) heightClass = "h-32";
-        else if (statusOrders.length < 4) heightClass = "h-40";
-        else if (statusOrders.length >= 6) heightClass = "h-96";
-
-        return { orders: statusOrders, heightClass };
-    };
-
-    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
-    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
-    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
-    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
-
+    //calculate summary data from the lastClosed time to current date
     useEffect(() => {
         if (!lastClosed) return;
+
         (async () => {
             try {
                 const qRef = query(
                     collection(db, "transaction_id"),
                     orderBy("createdAt", "asc"),
                     where("createdAt", ">=", Timestamp.fromDate(lastClosed)),
-                    where("createdAt", "<=", Timestamp.fromDate(to))
+                    where("createdAt", "<=", Timestamp.fromDate(initialNow))
                 );
 
                 const snap = await getDocs(qRef);
@@ -278,67 +154,94 @@ export const Closing = () => {
                 console.error(e);
             }
         })();
-    }, [lastClosed, to]);
+    }, [lastClosed, initialNow]);
+
+    //fetch order data from fireStore
+    useEffect(() => {
+        const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
+            const orderData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setOrder(orderData);
+            setIsLoading(false)
+        });
+        return () => unsub();
+    }, []);
+
+    const filteredSortedOrders = useMemo(() => {
+        return orders
+            .filter(order => {
+                const createdAt = order.createdAt?.toDate();
+                if (!createdAt) return false;
+                return createdAt >= lastClosed && createdAt <= initialNow;
+            })
+            .sort((a, b) => {
+                const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+                if (statusComparison !== 0) return statusComparison;
+                return b.createdAt.toDate() - a.createdAt.toDate();
+            });
+    }, [orders, lastClosed, initialNow]);
+
+    const getOrdersByStatus = status => {
+        const statusOrders = filteredSortedOrders.filter(order => order.status === status);
+
+        let heightClass = "";
+        if (statusOrders.length > 0 && statusOrders.length < 2) heightClass = "h-32";
+        else if (statusOrders.length < 4) heightClass = "h-40";
+        else if (statusOrders.length >= 6) heightClass = "h-96";
+
+        return { orders: statusOrders, heightClass };
+    };
+
+    const { orders: waitingOrders, heightClass: waitingHeight } = getOrdersByStatus("Waiting For Payment On Cashier");
+    const { orders: preparingOrders, heightClass: preparingHeight } = getOrdersByStatus("Preparing Food");
+    const { orders: finishedOrders, heightClass: finishedHeight } = getOrdersByStatus("Order Finished");
+    const { orders: canceledOrders, heightClass: canceledHeight } = getOrdersByStatus("Order Canceled");
 
     const handleShiftClose = () => {
         setShowModal(true);
     }
 
+    //handle close shift button logic
     const handleShiftClosing = async () => {
         if (!isAllowed) return;
         setIsProcessing(true);
 
-        // Update shift type after closing
         const closingShift = shiftType;
         const newShift = shiftType === "morning" ? "night" : "morning";
-        // await updateDoc(shiftDocRef, { type: newShift });
-        // setShiftType(newShift);
 
         try {
+            const now = new Date();
             const q = query(
                 collection(db, "transaction_id"),
                 where("createdAt", ">=", lastClosed),
-                where("createdAt", "<=", to)
+                where("createdAt", "<=", now)
             );
 
             const snapshot = await getDocs(q);
+            const batch = writeBatch(db);
 
             //add shiftType into every transactions
-            const addShiftUpdates = snapshot.docs.map(docSnap =>
-                updateDoc(docSnap.ref, { shiftType: closingShift })
-            );
+            snapshot.docs.forEach(docSnap => {
+                // Always add shiftType to each transaction
+                batch.update(docSnap.ref, { shiftType: closingShift });
 
-            if (addShiftUpdates.length) {
-                await Promise.all(addShiftUpdates);
-                console.log(`Added shiftType "${closingShift}" to ${addShiftUpdates.length} transactions`);
-            }
-
-            // Keep doc snapshots for updates
-            const filteredDocs = snapshot.docs.filter(doc =>
-                ["Waiting For Payment On Cashier", "Preparing Food"].includes(doc.data().status)
-            );
-
-            const updates = [];
-            filteredDocs.forEach(docSnap => {
+                // Auto-update statuses
                 const { status } = docSnap.data();
                 if (status === "Waiting For Payment On Cashier") {
-                    updates.push(updateDoc(docSnap.ref, { status: "Order Canceled" }));
+                    batch.update(docSnap.ref, { status: "Order Canceled" });
                 } else if (status === "Preparing Food") {
-                    updates.push(updateDoc(docSnap.ref, { status: "Order Finished" }));
+                    batch.update(docSnap.ref, { status: "Order Finished" });
                 }
             });
-            if (updates.length) {
-                await Promise.all(updates);
-                console.log(`Updated ${updates.length} orders`);
-            }
 
             // Update the shift type document
-            await updateDoc(shiftDocRef, {
-                type: newShift,
-                lastClosed: new Date()
-            });
-            setShiftType(newShift);
+            batch.update(shiftDocRef, { type: newShift, lastClosed: new Date() });
 
+            await batch.commit();
+            setShiftType(newShift);
+            console.log(`Shift closed: ${closingShift} → ${newShift}`);
         } catch (error) {
             console.log("Error updating pending status: ", error)
         }
