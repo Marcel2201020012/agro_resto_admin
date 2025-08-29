@@ -29,10 +29,8 @@ export const OrderPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const today = new Date();
-    const threeDaysAgo = new Date(); //current date
-    // threeDaysAgo.setDate(today.getDate() - 3);
-    const [from, setFrom] = useState(threeDaysAgo);
-    const [to, setTo] = useState(today);
+    const [from, setFrom] = useState(toStartOfDay(today));
+    const [to, setTo] = useState(toEndOfDay(today));
 
     const STATUS_PRIORITY = {
         'Waiting For Payment On Cashier': 1,
@@ -56,13 +54,10 @@ export const OrderPage = () => {
     useEffect(() => {
         (async () => {
             try {
-                const start = toStartOfDay(new Date(from));
-                const end = toEndOfDay(new Date(to));
-
                 const qRef = query(
                     collection(db, "transaction_id"),
-                    where("createdAt", ">=", Timestamp.fromDate(start)),
-                    where("createdAt", "<=", Timestamp.fromDate(end)),
+                    where("createdAt", ">=", Timestamp.fromDate(from)),
+                    where("createdAt", "<=", Timestamp.fromDate(to)),
                     orderBy("createdAt", "asc")
                 );
 
@@ -96,14 +91,6 @@ export const OrderPage = () => {
                         foodsMap.set(name, (foodsMap.get(name) || 0) + qty);
                     }
                 }
-
-                const foods = [...foodsMap.entries()]
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([name, qty]) => ({ name, qty }));
-
-                const chart = [...perDay.entries()]
-                    .sort((a, b) => a[1].date - b[1].date)
-                    .map(([key, v]) => ({ date: key, income: v.income, count: v.count }));
             } catch (e) {
                 console.error(e);
             } finally {
