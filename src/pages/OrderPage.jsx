@@ -16,13 +16,6 @@ const toEndOfDay = (d) => {
     return x;
 };
 
-const dayKey = (d) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${dd}`;
-};
-
 export const OrderPage = () => {
     const [orders, setOrder] = useState([]);
     const navigate = useNavigate();
@@ -51,7 +44,7 @@ export const OrderPage = () => {
         return () => unsub();
     }, []);
 
-    const filteredSortedOrders = useMemo(() => {
+    const filteredSortedOrders = (() => {
         const start = toStartOfDay(new Date(from));
         const end = toEndOfDay(new Date(to));
 
@@ -59,8 +52,6 @@ export const OrderPage = () => {
             .filter(order => {
                 const createdAt = order.createdAt?.toDate();
                 if (!createdAt) return false;
-
-                // Compare with from/to
                 return createdAt >= start && createdAt <= end;
             })
             .sort((a, b) => {
@@ -68,7 +59,7 @@ export const OrderPage = () => {
                 if (statusComparison !== 0) return statusComparison;
                 return b.createdAt.toDate() - a.createdAt.toDate();
             });
-    }, [orders]);
+    })();
 
     const getOrdersByStatus = status => {
         const statusOrders = filteredSortedOrders.filter(order => order.status === status);
@@ -175,7 +166,7 @@ export const OrderPage = () => {
                             type="date"
                             className="border bg-white rounded-xl px-3 py-2"
                             value={from} // convert Date to yyyy-mm-dd string
-                            onChange={(e) => setFrom(new Date(e.target.value))} // convert string back to Date
+                            onChange={(e) => setFrom(e.target.value)} // convert string back to Date
                         />
                     </div>
                     <div>
@@ -184,7 +175,7 @@ export const OrderPage = () => {
                             type="date"
                             className="border bg-white rounded-xl px-3 py-2"
                             value={to} // convert Date to yyyy-mm-dd string
-                            onChange={(e) => setTo(new Date(e.target.value))} // convert string back to Date
+                            onChange={(e) => setTo(e.target.value)} // convert string back to Date
                         />
                     </div>
                 </div>
