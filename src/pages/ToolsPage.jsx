@@ -91,7 +91,7 @@ export const ToolsPage = () => {
 
             <button
                 onClick={logout}
-                className="absolute bottom-2 mt-auto mb-32 md:mb-8 flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-500 hover:text-white transition-colors duration-200 font-semibold">
+                className="absolute bottom-4 mt-auto mb-32 md:mb-8 flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-500 hover:text-white transition-colors duration-200 font-semibold">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"

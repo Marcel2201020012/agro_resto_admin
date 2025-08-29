@@ -42,7 +42,7 @@ export const EditMenuPage = () => {
     }
 
     return (
-        <div className="container min-h-screen overflow-x-hidden">
+        <div className="container min-h-screen overflow-x-hidden mb-4">
             <div className="text-left pt-8">
                 <div onClick={() => navigate("/", { replace: true })} className="text-agro-color font-medium cursor-pointer">
                     AGRO RESTO

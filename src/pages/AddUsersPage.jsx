@@ -125,7 +125,7 @@ export const AddUsersPage = () => {
   };
 
   return (
-    <div className="container min-h-screen p-6 flex flex-col">
+    <div className="container min-h-screen p-6 flex flex-col mb-8">
       <div className="mb-10">
         <div onClick={() => navigate("/", { replace: true })} className="text-left text-agro-color font-medium text-lg cursor-pointer">
           AGRO RESTO
@@ -135,7 +135,7 @@ export const AddUsersPage = () => {
         </h1>
       </div>
 
-      <div className="flex-1 flex justify-center items-start">
+      <div className="flex flex justify-center items-start mb-6">
         <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8 space-y-6">
           <div className="space-y-4">
             <div>
@@ -208,7 +208,7 @@ export const AddUsersPage = () => {
       </div>
 
       {/* Back Button */}
-      <div className="mt-8 flex justify-center">
+      <div className="flex justify-center">
         <button
           onClick={() => navigate(-1)}
           disabled={loading}

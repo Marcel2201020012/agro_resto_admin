@@ -2,8 +2,12 @@ import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
 import { doc, updateDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import { useAuth } from "../../hooks/useAuth";
+
+import { Loader2 } from "lucide-react";
 
 export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks, solds }) => {
+    const { userData, checking } = useAuth();
     const originalValues = { img, name, desc, cn, price, promotion, stocks, solds };
 
     const [tempImg, setTempImg] = useState(img);
@@ -252,6 +256,14 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks,
         setShowConfirm(false);
     };
 
+    if (checking) {
+        return (
+            <div className="container min-h-screen flex justify-center items-center">
+                <Loader2 />
+            </div>
+        );
+    }
+
     return (
         <div className="bg-white border rounded-2xl px-6 py-4 shadow-md">
             <div className="flex gap-8 items-center">
@@ -262,107 +274,109 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks,
                 />
 
                 <div className="grid grid-cols-2 gap-3 flex-1">
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Image Link</label>
-                        <input
-                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                                }`}
-                            type="text"
-                            value={tempImg}
-                            placeholder="Input food image link"
-                            onChange={(e) => setTempImg(e.target.value)}
-                            onBlur={() => handleBlur("img")}
-                            readOnly={!isEditing}
-                        />
-                        {foodImgError && (
-                            <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
-                        )}
-                    </div>
+                    {/* {userData?.role !== "user" && <> */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-left font-medium text-gray-700">Image Link</label>
+                            <input
+                                className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                    }`}
+                                type="text"
+                                value={tempImg}
+                                placeholder="Input food image link"
+                                onChange={(e) => setTempImg(e.target.value)}
+                                onBlur={() => handleBlur("img")}
+                                readOnly={!isEditing}
+                            />
+                            {foodImgError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodImgError}</p>
+                            )}
+                        </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Food Name</label>
-                        <input
-                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                                }`}
-                            type="text"
-                            value={tempName}
-                            placeholder="Input food name"
-                            onChange={(e) => setTempName(e.target.value)}
-                            onBlur={() => handleBlur("name")}
-                            readOnly={!isEditing}
-                        />
-                        {foodNameError && (
-                            <p className="text-red-500 mt-1 text-sm">{foodNameError}</p>
-                        )}
-                    </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-left font-medium text-gray-700">Food Name</label>
+                            <input
+                                className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                    }`}
+                                type="text"
+                                value={tempName}
+                                placeholder="Input food name"
+                                onChange={(e) => setTempName(e.target.value)}
+                                onBlur={() => handleBlur("name")}
+                                readOnly={!isEditing}
+                            />
+                            {foodNameError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodNameError}</p>
+                            )}
+                        </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Chinese Name</label>
-                        <input
-                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                                }`}
-                            type="text"
-                            value={tempCn}
-                            placeholder="Input chinese name"
-                            onChange={(e) => setTempCn(e.target.value)}
-                            onBlur={() => handleBlur("chinese")}
-                            readOnly={!isEditing}
-                        />
-                        {cnNameError && (
-                            <p className="text-red-500 mt-1 text-sm">{cnNameError}</p>
-                        )}
-                    </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-left font-medium text-gray-700">Chinese Name</label>
+                            <input
+                                className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                    }`}
+                                type="text"
+                                value={tempCn}
+                                placeholder="Input chinese name"
+                                onChange={(e) => setTempCn(e.target.value)}
+                                onBlur={() => handleBlur("chinese")}
+                                readOnly={!isEditing}
+                            />
+                            {cnNameError && (
+                                <p className="text-red-500 mt-1 text-sm">{cnNameError}</p>
+                            )}
+                        </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Food Description</label>
-                        <input
-                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                                }`}
-                            type="text"
-                            value={tempDesc}
-                            placeholder="Input Food Description"
-                            onChange={(e) => setTempDesc(e.target.value)}
-                            onBlur={() => handleBlur("desc")}
-                            readOnly={!isEditing}
-                        />
-                        {foodDescError && (
-                            <p className="text-red-500 mt-1 text-sm">{foodDescError}</p>
-                        )}
-                    </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-left font-medium text-gray-700">Food Description</label>
+                            <input
+                                className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                    }`}
+                                type="text"
+                                value={tempDesc}
+                                placeholder="Input Food Description"
+                                onChange={(e) => setTempDesc(e.target.value)}
+                                onBlur={() => handleBlur("desc")}
+                                readOnly={!isEditing}
+                            />
+                            {foodDescError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodDescError}</p>
+                            )}
+                        </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Food Price</label>
-                        <input
-                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                                }`}
-                            type="text"
-                            value={tempPrice}
-                            placeholder="Input Food Price"
-                            onChange={(e) => setTempPrice(e.target.value)}
-                            onBlur={() => handleBlur("price")}
-                            readOnly={!isEditing}
-                        />
-                        {foodPriceError && (
-                            <p className="text-red-500 mt-1 text-sm">{foodPriceError}</p>
-                        )}
-                    </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-left font-medium text-gray-700">Food Price</label>
+                            <input
+                                className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                    }`}
+                                type="text"
+                                value={tempPrice}
+                                placeholder="Input Food Price"
+                                onChange={(e) => setTempPrice(e.target.value)}
+                                onBlur={() => handleBlur("price")}
+                                readOnly={!isEditing}
+                            />
+                            {foodPriceError && (
+                                <p className="text-red-500 mt-1 text-sm">{foodPriceError}</p>
+                            )}
+                        </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-left font-medium text-gray-700">Promotion Price</label>
-                        <input
-                            className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
-                                }`}
-                            type="text"
-                            value={tempPromotionPrice}
-                            placeholder="Input Promo"
-                            onChange={(e) => setTempPromotionPrice(e.target.value)}
-                            onBlur={() => handleBlur("promotion")}
-                            readOnly={!isEditing}
-                        />
-                        {promotionPriceError && (
-                            <p className="text-red-500 mt-1 text-sm">{promotionPriceError}</p>
-                        )}
-                    </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-left font-medium text-gray-700">Promotion Price</label>
+                            <input
+                                className={`border rounded-lg px-3 py-2 ${isEditing ? "border-blue-400" : "border-gray-300"
+                                    }`}
+                                type="text"
+                                value={tempPromotionPrice}
+                                placeholder="Input Promo"
+                                onChange={(e) => setTempPromotionPrice(e.target.value)}
+                                onBlur={() => handleBlur("promotion")}
+                                readOnly={!isEditing}
+                            />
+                            {promotionPriceError && (
+                                <p className="text-red-500 mt-1 text-sm">{promotionPriceError}</p>
+                            )}
+                        </div>
+                    {/* </>} */}
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-left font-medium text-gray-700">Food Stocks</label>

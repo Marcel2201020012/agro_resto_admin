@@ -30,6 +30,8 @@ import OrderListener from "./components/OrderListener";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
 
+import Footer from "./components/Footer";
+
 function App() {
   const { user } = useAuth();
 
@@ -72,6 +74,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Footer/>
     </>
   );
 }

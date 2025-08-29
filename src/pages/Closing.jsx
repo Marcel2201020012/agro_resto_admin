@@ -432,7 +432,7 @@ export const Closing = () => {
             )
             }
 
-            <div className="mt-10 mb-8 flex justify-between">
+            <div className="mb-12 flex justify-between">
                 <button onClick={() => navigate(-1)} className="bg-agro-color rounded-full p-2 w-24 text-white">
                     Back
                 </button>
