@@ -29,8 +29,8 @@ export const OrderPage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const today = new Date();
-    const threeDaysAgo = new Date();
-    threeDaysAgo.setDate(today.getDate() - 3);
+    const threeDaysAgo = new Date(); //current date
+    // threeDaysAgo.setDate(today.getDate() - 3);
     const [from, setFrom] = useState(threeDaysAgo);
     const [to, setTo] = useState(today);
 
