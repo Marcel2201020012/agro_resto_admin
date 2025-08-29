@@ -91,11 +91,18 @@ export const Closing = () => {
             if (lastClosed instanceof Date) {
                 const sameDay = lastClosed.toDateString() === now.toDateString();
 
-                if (shiftType === "morning" && sameDay && lastClosed.getHours() >= 6 && lastClosed.getHours() < 12) {
-                    allowed = false;
+                if (shiftType === "morning" && sameDay) {
+                    const morningStartMinutes = 11 * 60 + 35; // 11:35
+                    const morningEndMinutes = 21 * 60;        // 21:00
+                    const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
+
+                    if (lastClosedMinutes >= morningStartMinutes && lastClosedMinutes < morningEndMinutes) {
+                        allowed = false;
+                    }
                 }
+
                 if (shiftType === "night") {
-                    // Night spans across midnight → check if lastClosed happened between 20:35 and 06:00
+                    // Night spans across midnight → check if lastClosed happened between 20:35 and 06:00 next day
                     const nightStart = new Date(now);
                     nightStart.setHours(20, 35, 0, 0);
                     const nightEnd = new Date(nightStart);
@@ -107,6 +114,7 @@ export const Closing = () => {
                     }
                 }
             }
+
 
             setIsAllowed(allowed);
         };
