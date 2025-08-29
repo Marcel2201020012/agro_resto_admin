@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
+import { useAuth } from "../../hooks/useAuth";
 
 import { TrendingUp, Receipt, BadgePercent, File } from "lucide-react";
 
@@ -23,6 +24,7 @@ export const Closing = () => {
     const [isAllowed, setIsAllowed] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const { userData } = useAuth();
 
     const formatIDR = new Intl.NumberFormat("id-ID");
     const [summary, setSummary] = useState({
@@ -75,39 +77,44 @@ export const Closing = () => {
             const morningThreshold = 11 * 60 + 35; // 11:35
             const nightThreshold = 20 * 60 + 35;   // 20:35
 
-            if (shiftType === "morning") {
-                // only allow closing if time >= 11:35
-                if (currentMinutes >= morningThreshold) {
-                    allowed = true;
-                }
-            } else if (shiftType === "night") {
-                // allow closing if time >= 20:35 OR (past midnight until indefinetly)
-                if (currentMinutes >= nightThreshold || currentMinutes > 0) {
-                    allowed = true;
-                }
+            // 1. Basic allow rules
+            if (shiftType === "morning" && currentMinutes >= morningThreshold) {
+                allowed = true;
             }
 
-            // prevent double-close within the same shift
+            if (shiftType === "night" && currentMinutes >= nightThreshold) {
+                allowed = true;
+            }
+
+            // 2. Double-close prevention
             if (lastClosed instanceof Date) {
                 const sameDay = lastClosed.toDateString() === now.toDateString();
+                const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
 
-                if (shiftType === "morning" && sameDay) {
-                    const morningStartMinutes = 11 * 60 + 35; // 11:35
-                    const morningEndMinutes = 21 * 60;        // 21:00
-                    const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
+                if (shiftType === "morning") {
+                    if (sameDay && lastClosedMinutes >= morningThreshold) {
+                        // already closed this morning shift today
+                        allowed = false;
+                    }
 
-                    if (lastClosedMinutes >= morningStartMinutes && lastClosedMinutes < morningEndMinutes) {
+                    // extra: if last closed was a night shift from yesterday, 
+                    // block until this morning’s threshold is passed
+                    const closedWasYesterdayNight =
+                        !sameDay &&
+                        lastClosedMinutes >= nightThreshold; // closed last night shift
+                    if (closedWasYesterdayNight && currentMinutes < morningThreshold) {
                         allowed = false;
                     }
                 }
 
                 if (shiftType === "night") {
-                    const nightStartMinutes = 20 * 60 + 35; // 20:35
-                    const nightEndMinutes = 6 * 60;        // 06:00
-                    const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
+                    if (sameDay && lastClosedMinutes >= nightThreshold) {
+                        // already closed this night shift today
+                        allowed = false;
+                    }
 
-                    // Wrap-around logic for night
-                    if (shiftType === "night" && (lastClosedMinutes >= nightStartMinutes || lastClosedMinutes < nightEndMinutes)) {
+                    // if last closed was a morning shift today, block until night threshold
+                    if (sameDay && lastClosedMinutes >= morningThreshold && currentMinutes < nightThreshold) {
                         allowed = false;
                     }
                 }
@@ -117,8 +124,8 @@ export const Closing = () => {
         };
 
         checkTime();
-        const interval = setInterval(checkTime, 60_000); // check every minute
-        return () => clearInterval(interval);
+        const timer = setInterval(checkTime, 60000); // re-check every minute
+        return () => clearInterval(timer);
     }, [shiftType, lastClosed]);
 
     //calculate summary data from the lastClosed time to current date
@@ -227,31 +234,50 @@ export const Closing = () => {
             const snapshot = await getDocs(q);
             const batch = writeBatch(db);
 
-            //add shiftType into every transactions
+            // add shiftType into every transactions
             snapshot.docs.forEach(docSnap => {
-                // Always add shiftType to each transaction
-                batch.update(docSnap.ref, { shiftType: closingShift });
-
-                // Auto-update statuses
                 const { status } = docSnap.data();
+
+                let newStatus = status;
                 if (status === "Waiting For Payment On Cashier") {
-                    batch.update(docSnap.ref, { status: "Order Canceled" });
+                    newStatus = "Order Canceled";
                 } else if (status === "Preparing Food") {
-                    batch.update(docSnap.ref, { status: "Order Finished" });
+                    newStatus = "Order Finished";
                 }
+
+                batch.update(docSnap.ref, {
+                    shiftType: closingShift,
+                    waiter: userData?.username,
+                    status: newStatus
+                });
             });
 
-            // Update the shift type document
-            batch.update(shiftDocRef, { type: newShift, lastClosed: new Date() });
+            // Create a new shift document instead of updating
+            const dateStr = now.toISOString().split("T")[0]; // "2025-08-29"
+            const newShiftDocRef = doc(db, "shift_history", `${dateStr}_${closingShift}`);
+
+            batch.set(newShiftDocRef, {
+                type: closingShift,
+                closedAt: now,
+                waiter: userData?.username,
+            });
+
+            // Update current shift state (active shift doc reference)
+            batch.set(doc(db, "app_state", "shift"), {
+                type: newShift,
+                lastClosed: now,
+                waiter: userData?.username
+            });
 
             await batch.commit();
             setShiftType(newShift);
+
             console.log(`Shift closed: ${closingShift} → ${newShift}`);
         } catch (error) {
-            console.log("Error updating pending status: ", error)
+            console.log("Error updating pending status: ", error);
+        } finally {
+            await signOut(auth);
         }
-
-        await signOut(auth);
     };
 
     if (isLoading) return <div className="container min-h-screen flex justify-center items-center">
