@@ -1,11 +1,10 @@
 import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
-import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { useAuth } from "../../hooks/useAuth";
 
 import { useNavigate } from "react-router-dom"
-import { signOut } from "firebase/auth";
 
 export const EditUsersBox = ({ uid, username, role }) => {
     const navigate = useNavigate();
@@ -51,6 +50,9 @@ export const EditUsersBox = ({ uid, username, role }) => {
         const updatedValues = {
             username: tempUsername.trim() === "" ? originalValues.username : tempUsername,
             role: tempRole,
+            editedBy: userData?.username,
+            editedAt: serverTimestamp(),
+            prevValue: JSON.stringify(originalValues, null, 2)
         };
 
         if (

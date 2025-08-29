@@ -4,8 +4,11 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { collection, doc, getDocs, setDoc, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../hooks/useAuth";
+
 export const AddUsersPage = () => {
   const navigate = useNavigate();
+  const {userData} = useAuth();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -108,6 +111,7 @@ export const AddUsersPage = () => {
         username,
         role,
         createdAt: new Date(),
+        addedBy: userData?.username
       });
 
       alert("User created successfully!");

@@ -36,8 +36,23 @@
     0% {
       transform: translateX(100%);
     }
-    100%{
+
+    100% {
       transform: translateX(-100%);
+    }
+  }
+
+  @keyframes blinking {
+
+    0%,
+    50%,
+    100% {
+      box-shadow: 0 0 20px red;
+    }
+
+    25%,
+    75% {
+      box-shadow: 0 0 0px transparent;
     }
   }
 }
@@ -71,13 +86,18 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.animate-marquee{
+.animate-marquee {
   animation: marquee 20s linear infinite;
+}
+
+.animate-blinking {
+  animation: blinking 5s infinite;
 }
 
 #root {

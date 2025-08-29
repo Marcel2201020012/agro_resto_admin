@@ -1,6 +1,6 @@
 import { Edit, Trash } from "lucide-react"
 import { useState } from "react";
-import { doc, updateDoc, deleteDoc, getDocs, collection } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, getDocs, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -203,6 +203,9 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks,
             promotion: tempPromotionPrice === "" ? originalValues.promotion : Number(tempPromotionPrice),
             stocks: tempStocks === "" ? originalValues.stocks : Number(tempStocks),
             solds: tempSolds === "" ? originalValues.solds : Number(tempSolds),
+            editedBy: userData?.username,
+            editedAt: serverTimestamp(),
+            prevValue: JSON.stringify(originalValues, null, 2)
         };
 
         if (

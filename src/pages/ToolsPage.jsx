@@ -22,6 +22,78 @@ export const ToolsPage = () => {
 
     const shiftDocRef = doc(db, "app_state", "shift");
     const [shiftType, setShiftType] = useState(null);
+    const [canClose, setCanClose] = useState(false);
+    const [lastClosed, setIsLastClosed] = useState(null);
+
+    //fetch shiftType and lastClosed from firestore
+    useEffect(() => {
+        const unsub = onSnapshot(shiftDocRef, (snap) => {
+            if (!snap.exists()) return;
+
+            const data = snap.data();
+            setShiftType(data.type);
+            setIsLastClosed(data?.lastClosed?.toDate ? data.lastClosed.toDate() : null);
+        }, (err) => console.error("Error listening to shift doc:", err));
+
+        return () => unsub();
+    }, []);
+
+    useEffect(() => {
+        const checkTime = () => {
+            if (!shiftType) return;
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            let allowed = false;
+
+            // Shift thresholds in minutes
+            const morningThreshold = 11 * 60 + 35; // 11:35
+            const nightThreshold = 20 * 60 + 35;   // 20:35
+
+            // 1. Basic allow rules
+            if (shiftType === "morning" && currentMinutes >= morningThreshold) {
+                allowed = true;
+            }
+            if (shiftType === "night" && currentMinutes >= nightThreshold) {
+                allowed = true;
+            }
+
+            // 2. Double-close prevention
+            if (lastClosed instanceof Date) {
+                const sameDay = lastClosed.toDateString() === now.toDateString();
+                const lastClosedMinutes = lastClosed.getHours() * 60 + lastClosed.getMinutes();
+
+                if (shiftType === "morning") {
+                    if (sameDay && lastClosedMinutes >= morningThreshold) {
+                        allowed = false; // already closed this morning
+                    }
+                    // if last night shift was closed yesterday, block until morning threshold
+                    const closedWasYesterdayNight =
+                        !sameDay && lastClosedMinutes >= nightThreshold;
+                    if (closedWasYesterdayNight && currentMinutes < morningThreshold) {
+                        allowed = false;
+                    }
+                }
+
+                if (shiftType === "night") {
+                    if (sameDay && lastClosedMinutes >= nightThreshold) {
+                        allowed = false; // already closed this night
+                    }
+                    // if morning shift already closed today, block until night threshold
+                    if (sameDay && lastClosedMinutes >= morningThreshold && currentMinutes < nightThreshold) {
+                        allowed = false;
+                    }
+                }
+            }
+
+            setCanClose(allowed); // update your state (was setIsAllowed before)
+        };
+
+        checkTime(); // run immediately
+        const timer = setInterval(checkTime, 60 * 1000); // re-check every minute
+        return () => clearInterval(timer);
+    }, [shiftType, lastClosed]);
+
     const shiftTitle = shiftType === "morning" ? "Shift Closing" : "Cashier Closing";
 
     useEffect(() => {
@@ -69,7 +141,12 @@ export const ToolsPage = () => {
                     <div className="relative flex gap-8 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
-                        <ToolsBox img={closingImg} title={shiftTitle} route="/closing" />
+                        <ToolsBox
+                            img={closingImg}
+                            title={shiftTitle}
+                            route="/closing"
+                            canClose={canClose}
+                        />
                         {/* <ToolsBoxSales href="https://dashboard.midtrans.com/login" img={salesImg} title={"Sales"} /> */}
                         {/* <div
                             onClick={handleShowModal}

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 export const AddMenuPage = () => {
     const navigate = useNavigate();
+    const {userData} = useAuth();
 
     const [foodCategory, setFoodCategory] = useState("");
     const [foodCategoryError, setFoodCategoryError] = useState("");
@@ -137,7 +139,8 @@ export const AddMenuPage = () => {
             desc: foodDesc,
             price: foodPrice,
             stocks: foodStocks,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            addedBy: userData?.username
         };
 
         try {

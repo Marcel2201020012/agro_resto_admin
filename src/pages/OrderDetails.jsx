@@ -1,12 +1,15 @@
-import { doc, collection, updateDoc, onSnapshot, increment } from "firebase/firestore";
+import { doc, collection, updateDoc, onSnapshot, increment, serverTimestamp } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db } from "../../firebase/firebaseConfig";
 import { useReactToPrint } from "react-to-print";
 import { Reprint } from "../components/Reprint";
 
+import { useAuth } from "../../hooks/useAuth";
+
 export const OrderDetails = () => {
     const navigate = useNavigate();
+    const {userData} = useAuth();
     const [order, setOrder] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -123,7 +126,6 @@ export const OrderDetails = () => {
             }));
             setOrder(orderData);
 
-            const currentOrder = orderData.find((o) => o.id === id);
             setLoading(false)
         });
         return () => unsub();
@@ -242,7 +244,10 @@ export const OrderDetails = () => {
                     acc[idx] = item; // keep same structure
                     return acc;
                 }, {}),
-                total: newTotal
+                total: newTotal,
+                editedBy: userData?.username,
+                editedAt: serverTimestamp(),
+                prevValue: JSON.stringify(result, null, 2)
             });
 
             setIsEdit(false);
