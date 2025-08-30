@@ -164,6 +164,8 @@ export const Closing = () => {
                 setSummary({ totalIncome: income, totalTransactions: rows.length });
             } catch (e) {
                 console.error(e);
+            } finally {
+                setIsLoading(false);
             }
         })();
     }, [lastClosed, initialNow]);
@@ -176,7 +178,6 @@ export const Closing = () => {
                 ...doc.data()
             }));
             setOrder(orderData);
-            setIsLoading(false)
         });
         return () => unsub();
     }, []);
@@ -192,7 +193,10 @@ export const Closing = () => {
                 const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
                 if (statusComparison !== 0) return statusComparison;
                 return b.createdAt.toDate() - a.createdAt.toDate();
-            });
+            }).map(order => ({
+                ...order,
+                isComplimentary: order.complimentary === true
+            }));
     }, [orders, lastClosed, initialNow]);
 
     const getOrdersByStatus = status => {
@@ -366,6 +370,7 @@ export const Closing = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>
@@ -385,6 +390,7 @@ export const Closing = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>
@@ -404,6 +410,7 @@ export const Closing = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>
@@ -423,6 +430,7 @@ export const Closing = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>

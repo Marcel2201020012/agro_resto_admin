@@ -58,7 +58,11 @@ export const OrderPage = () => {
                 const statusComparison = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
                 if (statusComparison !== 0) return statusComparison;
                 return b.createdAt.toDate() - a.createdAt.toDate();
-            });
+            })
+            .map(order => ({
+                ...order,
+                isComplimentary: order.complimentary === true
+            }));
     })();
 
     const getOrdersByStatus = status => {
@@ -195,6 +199,7 @@ export const OrderPage = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>
@@ -214,6 +219,7 @@ export const OrderPage = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>
@@ -233,6 +239,7 @@ export const OrderPage = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>
@@ -252,6 +259,7 @@ export const OrderPage = () => {
                                     date={order.createdAt}
                                     status={order.status}
                                     customerName={order.customerName}
+                                    isComplimentary={order.isComplimentary}
                                 />
                             ))}
                         </div>

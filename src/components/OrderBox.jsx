@@ -4,24 +4,24 @@ import { doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useAuth } from "../../hooks/useAuth";
 
-export const OrderBox = ({ id, date, status, customerName }) => {
+export const OrderBox = ({ id, date, status, customerName, isComplimentary }) => {
     const { user, userData, checking } = useAuth();
     const navigate = useNavigate();
     const [isDeleteable, setIsCancelled] = useState(false);
 
-   const formatDate = (timestamp) => {
-    // Convert Firestore timestamp or JS date to a Date object
-    const d = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+    const formatDate = (timestamp) => {
+        // Convert Firestore timestamp or JS date to a Date object
+        const d = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
 
-    // Pad single-digit month/day/hours/minutes with leading zero
-    const pad = (n) => String(n).padStart(2, "0");
+        // Pad single-digit month/day/hours/minutes with leading zero
+        const pad = (n) => String(n).padStart(2, "0");
 
-    // Return in MM/DD/YYYY HH:MM format
-    const date = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
-    const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        // Return in MM/DD/YYYY HH:MM format
+        const date = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+        const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-    return `${date} ${time}`;
-};
+        return `${date} ${time}`;
+    };
 
 
     const handleDelete = async (e) => {
@@ -53,6 +53,13 @@ export const OrderBox = ({ id, date, status, customerName }) => {
                     <span className="text-right">{customerName}</span>
                 </div>
             </div>
+
+            {/* Complimentary Badge */}
+            {isComplimentary && (
+                <div className="absolute top-2 left-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">
+                    Complimentary
+                </div>
+            )}
 
             {isDeleteable && (userData?.role === "admin" || userData?.role === "super admin") && (
                 <button
