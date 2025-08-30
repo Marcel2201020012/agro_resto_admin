@@ -13,7 +13,7 @@ const formatDate = (timestamp) => {
     return `${month}/${day}/${year}`;
 };
 
-export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
+export const Reprint = forwardRef(({ id, result }, ref) => {
     const { user, userData, checking } = useAuth();
 
     return (
@@ -105,7 +105,7 @@ export const Reprint = forwardRef(({ id, result, cashValue }, ref) => {
                 </div>
             </div>
 
-            {result.cash > result.total + 2 * result.total * 0.1 &&
+            {result.cash > result.total - 2 * result.total * 0.1 &&
                 <div className="flex justify-between">
                     <div className="flex w-full font-bold">
                         <span className="flex-1 text-left">Change</span>

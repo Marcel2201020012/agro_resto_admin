@@ -652,7 +652,7 @@ export const OrderDetails = () => {
             )}
 
             <div style={{ position: "absolute", left: "-9999px" }}>
-                {result ? <Reprint ref={receiptRef} id={id} result={result} cashValue={cashValue} /> : ""}
+                {result ? <Reprint ref={receiptRef} id={id} result={result} /> : ""}
             </div>
 
         </div >
