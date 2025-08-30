@@ -142,7 +142,7 @@ export const OrderDetails = () => {
     }, [result]);
 
     const validateCashValue = (valueToCheck) => {
-        if (isNaN(valueToCheck) || Number(valueToCheck) <= 0 || Number(valueToCheck) < Number(result.total - 2 * result.total * 0.1)) {
+        if (isNaN(valueToCheck) || Number(valueToCheck) <= 0 || Number(valueToCheck) < Number(result.total)) {
             setCashValueError("Please enter a valid cash value.");
             return false;
         }
