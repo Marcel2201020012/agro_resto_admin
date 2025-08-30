@@ -34,17 +34,41 @@ export const Reprint = forwardRef(({ id, result }, ref) => {
                 <span>Total</span>
             </div>
             <hr />
-            {Object.values(result.orderDetails).filter(item => Number(item.jumlah) > 0).map((item, i) => (
-                <div key={i}>
-                    <div className="flex flex-col text-left">
-                        <span> {item.name} </span>
-                        <div className="grid grid-cols-2">
-                            <span className="text-center">  x{item.jumlah} </span>
-                            <span className="text-right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.promotion > 0 ? item.promotion : item.price)}</span>
+            {Object.values(result.orderDetails)
+                .filter(item => Number(item.jumlah) > 0)
+                .map((item, i) => (
+                    <div key={i} className="mb-2">
+                        {/* First line: name + optional strikethrough */}
+                        <div className="flex justify-between">
+                            <span>{item.name}</span>
+                            {item.promotion > 0 && (
+                                <span className="text-gray-400 line-through">
+                                    {new Intl.NumberFormat("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                        minimumFractionDigits: 0,
+                                    }).format(item.price * item.jumlah)}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Second line: qty + final price */}
+                        <div className="flex justify-between pl-16">
+                            <span className="text-gray-600">x{item.jumlah}</span>
+                            <span>
+                                {new Intl.NumberFormat("id-ID", {
+                                    style: "currency",
+                                    currency: "IDR",
+                                    minimumFractionDigits: 0,
+                                }).format(
+                                    item.promotion > 0
+                                        ? item.promotion * item.jumlah
+                                        : item.price * item.jumlah
+                                )}
+                            </span>
                         </div>
                     </div>
-                </div>
-            ))}
+                ))}
 
             <div className="flex justify-between mt-2">
                 <div className="flex w-full">

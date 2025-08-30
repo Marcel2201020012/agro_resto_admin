@@ -365,95 +365,135 @@ export const OrderDetails = () => {
                 </div>
             </div>
 
-            <div className="border p-4 rounded-xl bg-gray-50">
-                <div className="space-y-2">
+            <div className="border p-4 rounded-xl bg-gray-50 shadow-sm">
+                {/* Items */}
+                <div className="space-y-3">
                     {Object.values(result.orderDetails)
                         .filter(item => Number(item.jumlah) > 0)
                         .map((item, index) => (
                             <div key={index} className="flex justify-between items-center">
-                                <div className="text-left">
-                                    <span>{item.jumlah}x</span>{" "}
-                                    <span>{item.name}</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium">{item.jumlah}x</span>
+                                    <span className="font-medium">{item.name}</span>
+
+                                    {/* Show Promo Badge if discounted */}
+                                    {item.promotion > 0 && (
+                                        <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
+                                            Promo
+                                        </span>
+                                    )}
+
+                                    {/* Strikethrough original price */}
+                                    {item.promotion > 0 && (
+                                        <span className="text-xs text-gray-400 line-through ml-1">
+                                            {new Intl.NumberFormat("id-ID", {
+                                                style: "currency",
+                                                currency: "IDR",
+                                                minimumFractionDigits: 0,
+                                            }).format(item.price * item.jumlah)}
+                                        </span>
+                                    )}
                                 </div>
 
-                                {item.promotion > 0 ? (
-                                    <div className="text-right font-semibold">
-                                        {new Intl.NumberFormat("id-ID", {
-                                            style: "currency",
-                                            currency: "IDR",
-                                            minimumFractionDigits: 0,
-                                        }).format(item.promotion)}
-                                    </div>
-                                ) : (
-                                    <div className="text-right font-semibold">
-                                        {new Intl.NumberFormat("id-ID", {
-                                            style: "currency",
-                                            currency: "IDR",
-                                            minimumFractionDigits: 0,
-                                        }).format(item.price)}
-                                    </div>
-                                )}
+                                {/* Final Price */}
+                                <div className="font-semibold text-gray-700">
+                                    {new Intl.NumberFormat("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                        minimumFractionDigits: 0,
+                                    }).format(
+                                        item.promotion > 0
+                                            ? item.promotion * item.jumlah
+                                            : item.price * item.jumlah
+                                    )}
+                                </div>
                             </div>
                         ))}
-                    <div className="flex justify-between items-center">
-                        <span className="font-bold">Service 10%</span>
-                        <span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0
-                        }).format(Number(result.total * 0.1))}</span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                        <span className="font-bold">Tax 10%</span>
-                        <span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0
-                        }).format(Number(result.total * 0.1))}</span>
-                    </div>
-
-                    {(result.status === "Preparing Food" || result.status === "Order Finished") && (<div className="flex justify-between items-center">
-                        <span className="font-bold">{result.payment}</span>
-                        {result.cash ? (<span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0
-                        }).format(Number(result.cash))}</span>) : (<span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0
-                        }).format(Number(result.total))}</span>)}
-                    </div>)}
-
-                    {result.cash > result.total && (
-                        <div className="flex justify-between items-center">
-                            <span className="font-bold">Change</span>
-                            <span className="font-bold">{new Intl.NumberFormat('id-ID', {
-                                style: 'currency',
-                                currency: 'IDR',
-                                minimumFractionDigits: 0
-                            }).format(Number(result.cash - (result.total)))}</span>
-                        </div>
-                    )}
-
-                    {isComplimentary &&
-                        <div className="flex justify-between items-center">
-                            <span className="font-bold">Complimentary</span>
-                        </div>
-                    }
                 </div>
 
-                <div className="flex justify-between mt-4 border-t pt-2">
-                    <p className="font-bold">Total</p>
-                    <p className="text-green-700 font-bold">
+                {/* Service & Tax */}
+                <div className="mt-4 border-t pt-3 space-y-2 text-gray-600">
+                    <div className="flex justify-between items-center text-gray-600">
+                        <span>Subtotal (Before Tax)</span>
+                        <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(result.total - (2 * result.total * 0.1)))}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span>Service 10%</span>
+                        <span>
+                            {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                            }).format(Number(result.total * 0.1))}
+                        </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span>Tax 10%</span>
+                        <span>
+                            {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                            }).format(Number(result.total * 0.1))}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Total */}
+                <div className="mt-4 border-t pt-3 flex justify-between items-center text-left">
+                    <div>
+                        <p className="text-lg font-bold">Total</p>
+                        <p className="text-xs text-gray-500 italic">*Tax Included</p>
+                    </div>
+                    <p className="text-green-700 text-lg font-bold">
                         {new Intl.NumberFormat('id-ID', {
                             style: 'currency',
                             currency: 'IDR',
-                            minimumFractionDigits: 0
+                            minimumFractionDigits: 0,
                         }).format(Number(result.total))}
                     </p>
                 </div>
+
+                {/* Payment */}
+                {(result.status === "Preparing Food" || result.status === "Order Finished") && (
+                    <div className="mt-2 flex justify-between items-center text-gray-700">
+                        <span className="font-medium">{result.payment}</span>
+                        <span className="font-medium">
+                            {result.cash
+                                ? new Intl.NumberFormat('id-ID', {
+                                    style: 'currency',
+                                    currency: 'IDR',
+                                    minimumFractionDigits: 0,
+                                }).format(Number(result.cash))
+                                : new Intl.NumberFormat('id-ID', {
+                                    style: 'currency',
+                                    currency: 'IDR',
+                                    minimumFractionDigits: 0,
+                                }).format(Number(result.total))}
+                        </span>
+                    </div>
+                )}
+
+                {/* Change */}
+                {result.cash > result.total && (
+                    <div className="mt-1 flex justify-between items-center text-gray-700">
+                        <span className="font-medium">Change</span>
+                        <span className="font-medium text-red-600">
+                            {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                            }).format(Number(result.cash - result.total))}
+                        </span>
+                    </div>
+                )}
+
+                {/* Complimentary */}
+                {isComplimentary && (
+                    <div className="mt-1 flex justify-between items-center text-gray-700 font-medium">
+                        <span>Complimentary</span>
+                    </div>
+                )}
             </div>
 
             <div className="flex justify-between mt-4 mb-12">
