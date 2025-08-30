@@ -99,13 +99,13 @@ export const Reprint = forwardRef(({ id, result }, ref) => {
                             .format(Number(result.cash))}
                     </span>) : (<span className="flex-1 text-right">
                         {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
-                            .format(Number(result.total - 2 * result.total * 0.1))}
+                            .format(Number(result.total))}
                     </span>)}
 
                 </div>
             </div>
 
-            {result.cash > result.total - 2 * result.total * 0.1 &&
+            {result.cash > result.total &&
                 <div className="flex justify-between">
                     <div className="flex w-full font-bold">
                         <span className="flex-1 text-left">Change</span>
