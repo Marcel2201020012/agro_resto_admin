@@ -21,9 +21,14 @@ export const OrderPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
 
-    const today = new Date();
-    const [from, setFrom] = useState(today.toISOString().slice(0, 10));
-    const [to, setTo] = useState(today.toISOString().slice(0, 10));
+    const today = new Date(); // utc time
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const localDate = `${yyyy}-${mm}-${dd}`; //convert to local time UTC + 7
+
+    const [from, setFrom] = useState(localDate);
+    const [to, setTo] = useState(localDate);
 
     const STATUS_PRIORITY = {
         'Waiting For Payment On Cashier': 1,

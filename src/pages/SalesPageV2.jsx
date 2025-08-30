@@ -29,11 +29,9 @@ const formatIDR = new Intl.NumberFormat("id-ID");
 export const SalesPage = () => {
     const navigate = useNavigate();
     const today = new Date();
-    const weekAgo = new Date(); //one day after today to save write quota
-    // weekAgo.setDate(today.getDate() - 7);
 
-    const [from, setFrom] = useState(weekAgo.toISOString().slice(0, 10));
-    const [to, setTo] = useState(today.toISOString().slice(0, 10));
+    const [from, setFrom] = useState(dayKey(today));
+    const [to, setTo] = useState(dayKey(today));
     const [isLoading, setisLoading] = useState(true);
 
     const [summary, setSummary] = useState({
