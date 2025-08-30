@@ -17,7 +17,7 @@ export const Reprint = forwardRef(({ id, result }, ref) => {
     const { user, userData, checking } = useAuth();
 
     return (
-        <div ref={ref} className="p-2 text-xs" style={{ width: "58mm" }}>
+        <div ref={ref} className="p-2 text-xs relative" style={{ width: "58mm" }}>
             <div className="text-center font-bold mb-2">
                 <div>AGRO HOTEL</div>
                 <div>ASIANA 早餐汀</div>
@@ -119,10 +119,10 @@ export const Reprint = forwardRef(({ id, result }, ref) => {
             }
 
             {result.complimentary &&
-                <div className="flex justify-between">
-                    <div className="flex w-full font-bold">
-                        <span className="flex-1 text-left">Complimentary</span>
-                    </div>
+                <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-[-45deg] text-red-500 text-2xl font-bold opacity-50 z-10"
+                >
+                    COMPLIMENTARY
                 </div>
             }
 

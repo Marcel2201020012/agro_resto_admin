@@ -9,7 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 export const OrderDetails = () => {
     const navigate = useNavigate();
-    const {userData} = useAuth();
+    const { userData } = useAuth();
     const [order, setOrder] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -25,7 +25,7 @@ export const OrderDetails = () => {
     const [showEdit, setShowEdit] = useState(false);
     const [editItems, setEditItems] = useState([]);
 
-    const [isComplimentary, setIsComplimentary] = useState(false);
+    const [isComplimentary, setIsComplimentary] = useState(null);
     const [isLoading, setIsLoading] = useState(false)
 
     const { id } = useParams();
@@ -79,7 +79,6 @@ export const OrderDetails = () => {
             } else {
                 await updateDoc(orderRef, {
                     status: statusValue,
-                    complimentary: isComplimentary,
                     // paymentUrl: ""
                 });
             }
@@ -91,31 +90,36 @@ export const OrderDetails = () => {
     };
 
     const updateStock = async (details) => {
-        if (!details?.orderDetails) return;
-
-        const batchUpdates = details.orderDetails.map(async (item) => {
+        const orderDetailsArray = Object.values(details.orderDetails || {});
+        const batchUpdates = orderDetailsArray.map(async (item) => {
             try {
                 const menuRef = doc(db, "menu_makanan", item.id);
                 await updateDoc(menuRef, { stocks: increment(-item.jumlah) });
+                console.log(`✅ Stock updated for ${item.id} (-${item.jumlah})`);
             } catch (err) {
-                console.error(`Failed to update stock for ${item.id}:`, err);
+                console.error(`❌ Failed to update stock for ${item.id}:`, err);
             }
         });
 
         await Promise.all(batchUpdates);
+        console.log("🎉 All stock updates completed!");
     };
 
-    const updateMenuSolds = async (orderDetails) => {
-        if (!Array.isArray(orderDetails)) return;
 
-        const updates = orderDetails.map(async (item) => {
-            const menuRef = doc(db, "menu_makanan", item.id);
-            await updateDoc(menuRef, {
-                solds: increment(item.jumlah),
-            });
+    const updateMenuSolds = async (orderDetails) => {
+        const orderDetailsArray = Object.values(orderDetails || {});
+        const updates = orderDetailsArray.map(async (item) => {
+            try {
+                const menuRef = doc(db, "menu_makanan", item.id);
+                await updateDoc(menuRef, { solds: increment(item.jumlah) });
+                console.log(`✅ Solds updated for ${item.id} (+${item.jumlah})`);
+            } catch (err) {
+                console.error(`❌ Failed to update solds for ${item.id}:`, err);
+            }
         });
 
         await Promise.all(updates);
+        console.log("🎉 All sold counts updated successfully!");
     };
 
     useEffect(() => {
@@ -130,6 +134,12 @@ export const OrderDetails = () => {
         });
         return () => unsub();
     }, [id]);
+
+    useEffect(() => {
+        if (result) {
+            setIsComplimentary(result.complimentary);
+        }
+    }, [result]);
 
     const validateCashValue = (valueToCheck) => {
         if (isNaN(valueToCheck) || Number(valueToCheck) <= 0 || Number(valueToCheck) < Number(result.total - 2 * result.total * 0.1)) {
@@ -166,7 +176,6 @@ export const OrderDetails = () => {
         const transactionRef = doc(db, "transaction_id", id);
         await updateDoc(transactionRef, {
             cash: cashValue,
-            complimentary: isComplimentary,
         });
         updateStatus(id, "Preparing Food", result.tableId);
         updateStock(result);
@@ -188,6 +197,20 @@ export const OrderDetails = () => {
             setShowCashPayment(true);
         }
     }
+
+    const handleComplimentary = async (value) => {
+        const ref = doc(db, "transaction_id", result.id);
+        try {
+            setIsLoading(true);
+            await updateDoc(ref, { complimentary: value });
+            setIsComplimentary(value);
+        } catch (e) {
+            console.log("set complimentary failed: ", e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     const handleEdit = () => {
         setShowEdit(false);
@@ -267,7 +290,6 @@ export const OrderDetails = () => {
         setModalAction('finish');
         setShowModal(true);
     };
-
 
     if (loading) return <div className="container min-h-screen flex justify-center items-center">
         <p className="text-lg font-semibold">Loading...</p>
@@ -391,12 +413,6 @@ export const OrderDetails = () => {
                         }).format(Number(result.total * 0.1))}</span>
                     </div>
 
-                    {isComplimentary &&
-                        <div className="flex justify-between items-center">
-                            <span className="font-bold">Complimentary</span>
-                        </div>
-                    }
-
                     {(result.status === "Preparing Food" || result.status === "Order Finished") && (<div className="flex justify-between items-center">
                         <span className="font-bold">{result.payment}</span>
                         {result.cash ? (<span className="font-bold">{new Intl.NumberFormat('id-ID', {
@@ -407,10 +423,10 @@ export const OrderDetails = () => {
                             style: 'currency',
                             currency: 'IDR',
                             minimumFractionDigits: 0
-                        }).format(Number(result.total - 2 * result.total * 0.1))}</span>)}
+                        }).format(Number(result.total))}</span>)}
                     </div>)}
 
-                    {result.cash > result.total - 2 * result.total * 0.1 && (
+                    {result.cash > result.total && (
                         <div className="flex justify-between items-center">
                             <span className="font-bold">Change</span>
                             <span className="font-bold">{new Intl.NumberFormat('id-ID', {
@@ -421,6 +437,11 @@ export const OrderDetails = () => {
                         </div>
                     )}
 
+                    {isComplimentary &&
+                        <div className="flex justify-between items-center">
+                            <span className="font-bold">Complimentary</span>
+                        </div>
+                    }
                 </div>
 
                 <div className="flex justify-between mt-4 border-t pt-2">
@@ -531,21 +552,28 @@ export const OrderDetails = () => {
             {
                 showEdit && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                        <div className="bg-white p-6 rounded shadow-lg text-center w-1/2">
-                            <h2 className="text-lg font-bold mb-4">Attention</h2>
-                            <p>Are the current order need to be edited?</p>
+                        <div className="bg-white p-6 rounded-lg shadow-xl text-center w-full max-w-md">
+                            <h2 className="text-xl font-semibold text-red-600 mb-3 flex items-center justify-center gap-2">
+                                Attention
+                            </h2>
+                            <p className="text-gray-700">
+                                Do you want to <span className="font-medium">edit this order</span>?
+                                <br />
+                                If not, please press <span className="font-medium">No</span>.
+                            </p>
+
                             <div className="mt-6 flex justify-center gap-4">
                                 <button
                                     onClick={handleEdit}
-                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md shadow transition"
                                 >
-                                    Yes
+                                    Yes, Edit
                                 </button>
                                 <button
-                                    onClick={() => { setShowEdit(false); handleConfirmPayment() }}
-                                    className="bg-red-500 text-white px-4 py-2 rounded"
+                                    onClick={() => { setShowEdit(false); handleConfirmPayment(); }}
+                                    className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md shadow transition"
                                 >
-                                    No
+                                    No, Continue
                                 </button>
                             </div>
                         </div>
@@ -625,14 +653,14 @@ export const OrderDetails = () => {
 
                             {isComplimentary ? (
                                 <button
-                                    onClick={() => setIsComplimentary(false)}
+                                    onClick={() => handleComplimentary(false)}
                                     className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
                                 >
                                     Cancel Complimentary
                                 </button>
                             ) : (
                                 <button
-                                    onClick={() => setIsComplimentary(true)}
+                                    onClick={() => handleComplimentary(true)}
                                     className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
                                 >
                                     Set Complimentary
