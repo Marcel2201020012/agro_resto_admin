@@ -86,40 +86,51 @@ export const LoginForm = () => {
     };
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center gap-8">
-            <div className="font-bold text-white text-center text-3xl">
+        <div className="relative min-h-screen flex flex-col items-center justify-center gap-6 px-4">
+            {/* Header */}
+            <div className="font-bold text-white text-center text-2xl sm:text-3xl">
                 <span>Agro Hotel Restaurant</span>
                 <br />
                 <span>Admin Panel</span>
             </div>
 
-            <div className="border border-none rounded-4xl bg-agro-color p-12 w-5/12 flex flex-col space-y-12">
-                <div className="text-white flex flex-col space-y-4">
-                    <div className="font-semibold text-4xl">Login</div>
-                    <div className="font-medium">Please enter your credentials below to continue</div>
+            {/* Card */}
+            <div className="border border-none rounded-3xl bg-agro-color p-6 sm:p-10 md:p-12 w-full max-w-xl flex flex-col space-y-8">
+                <div className="text-white flex flex-col space-y-3">
+                    <div className="font-semibold text-3xl sm:text-4xl">Login</div>
+                    <div className="font-medium text-sm sm:text-base">
+                        Please enter your credentials below to continue
+                    </div>
                 </div>
 
-                <form className="text-white flex flex-col gap-2 w-full max-w-sm mx-auto items-center">
-                    <label htmlFor="email" className="text-left font-medium w-full">Email or Username</label>
+                {/* Form */}
+                <form className="text-white flex flex-col gap-3 w-full items-center">
+                    {/* Email */}
+                    <label
+                        htmlFor="email"
+                        className="text-left font-medium w-full text-sm sm:text-base"
+                    >
+                        Email or Username
+                    </label>
                     <input
                         type="text"
                         id="email"
                         name="identifier"
                         required
-                        className="w-full p-1 rounded bg-white text-black"
+                        className="w-full p-2 rounded bg-white text-black text-sm sm:text-base"
                         placeholder="Please enter your Email or Username"
                         value={formData.identifier}
                         onChange={handleChange}
                     />
 
-                    <label htmlFor="password" className="text-left font-medium w-full">Password</label>
+                    {/* Password */}
                     <div className="relative w-full">
                         <input
                             type={showPassword ? "text" : "password"}
                             id="password"
                             name="password"
                             required
-                            className="w-full p-1 rounded bg-white text-black"
+                            className="w-full p-2 pr-10 rounded bg-white text-black text-sm sm:text-base"
                             placeholder="Please enter your Password"
                             value={formData.password}
                             onChange={handleChange}
@@ -134,15 +145,17 @@ export const LoginForm = () => {
                         </button>
                     </div>
 
+                    {/* Button */}
                     <button
                         type="submit"
-                        className="mt-2 rounded bg-white text-black font-semibold py-2 w-1/4"
+                        className="mt-4 rounded bg-white text-black font-semibold py-2 w-full sm:w-1/2"
                         onClick={handleSubmit}
                         disabled={isLogin}
                     >
                         {!isLogin ? <span>Login</span> : <span>Loading...</span>}
                     </button>
-                    {error && <p className="text-red-500">{error}</p>}
+
+                    {error && <p className="text-red-500 text-sm sm:text-base">{error}</p>}
                 </form>
             </div>
         </div>

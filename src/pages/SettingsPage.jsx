@@ -30,7 +30,7 @@ export const SettingsPage = () => {
                         <span>Settings</span>
                     </div>
 
-                    <div className="relative flex gap-8 p-4">
+                    <div className="relative flex flex-wrap justify-center gap-6 p-4">
                         {userData?.role === "super admin" &&
                             <ToolsBox img={userImg} title={"Users"} route={"/userSettings"} />
                         }

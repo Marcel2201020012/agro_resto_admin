@@ -50,7 +50,7 @@ export const MenuSettingPage = () => {
     }
 
     return (
-        <div className="container min-h-screen overflow-x-hidden overflow-y-hidden">
+        <div className="container min-h-screen overflow-x-hidden overflow-y-auto">
             <Background bg={bg} />
 
             <main className="flex items-center justify-center min-h-screen">
@@ -59,7 +59,7 @@ export const MenuSettingPage = () => {
                         <span>Menu Settings</span>
                     </div>
 
-                    <div className="relative flex gap-8 p-4">
+                    <div className="relative flex flex-wrap justify-center gap-6 p-4">
                         {userData?.role !== "user" &&
                             <ToolsBox img={addMenuImg} title={"Add Menu"} route={"/addMenu"}></ToolsBox>
                         }
@@ -96,7 +96,7 @@ export const MenuSettingPage = () => {
             )
             }
 
-            <div onClick={() => navigate(-1)} className="bg-agro-color absolute bottom-12 rounded-full px-6 py-2 w-45">
+            <div onClick={() => navigate(-1)} className="bg-agro-color fixed bottom-12 rounded-full px-6 py-2 w-45">
                 <span className="text-white">
                     Back
                 </span>

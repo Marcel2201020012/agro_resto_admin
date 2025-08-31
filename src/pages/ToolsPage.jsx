@@ -124,7 +124,7 @@ export const ToolsPage = () => {
     }
 
     return (
-        <div className="container min-h-screen overflow-x-hidden overflow-y-hidden">
+        <div className="container min-h-screen overflow-x-hidden overflow-y-auto">
             <Background bg={bg} />
 
             <main className="flex items-center justify-center min-h-screen">
@@ -138,7 +138,7 @@ export const ToolsPage = () => {
                     </div>
 
                     {/* Tools section */}
-                    <div className="relative flex gap-8 p-4">
+                    <div className="relative flex flex-wrap justify-center gap-6 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
                         <ToolsBox
@@ -168,7 +168,7 @@ export const ToolsPage = () => {
 
             <button
                 onClick={logout}
-                className="absolute bottom-4 mt-auto mb-32 md:mb-8 flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-500 hover:text-white transition-colors duration-200 font-semibold">
+                className="fixed bottom-4 mt-auto mb-32 md:mb-8 flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-500 hover:text-white transition-colors duration-200 font-semibold">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
