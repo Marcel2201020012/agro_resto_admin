@@ -262,6 +262,7 @@ export const OrderDetails = () => {
             }, 0);
 
             const ref = doc(db, "transaction_id", result.id);
+            const { prevValue, ...rest } = result; //excluding prevValue
             await updateDoc(ref, {
                 orderDetails: editItems.reduce((acc, item, idx) => {
                     acc[idx] = item; // keep same structure
@@ -270,7 +271,7 @@ export const OrderDetails = () => {
                 total: newTotal,
                 editedBy: userData?.username,
                 editedAt: serverTimestamp(),
-                prevValue: JSON.stringify(result, null, 2)
+                prevValue: JSON.stringify(rest, null, 2)
             });
 
             setIsEdit(false);
