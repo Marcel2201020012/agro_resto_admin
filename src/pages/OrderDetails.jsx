@@ -506,7 +506,7 @@ export const OrderDetails = () => {
                 </button>
 
                 {/* {result.status !== "Order Canceled" && result.status !== "Order Finished" && result.status !== "Preparing Food" && ( */}
-                {result.status === "Waiting For Payment On Cashier" && (
+                {result.status === "Waiting For Payment On Cashier" && userData?.role !== "user" && (
                     <button onClick={handleCancelOrder} className="bg-red-500 rounded-full text-white px-6 py-2 w-45">
                         <span>Cancel Order</span>
                     </button>
