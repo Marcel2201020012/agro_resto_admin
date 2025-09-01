@@ -138,7 +138,7 @@ export const ToolsPage = () => {
                     </div>
 
                     {/* Tools section */}
-                    <div className="relative flex flex-wrap justify-center gap-6 p-4">
+                    <div className="relative flex justify-center gap-6 p-4">
                         <ToolsBox img={orderImg} title="Order" route="/order" />
                         <ToolsBox img={salesImg} title="Sales" route="/sales" />
                         <ToolsBox

@@ -277,7 +277,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks,
                 />
 
                 <div className="grid grid-cols-2 gap-3 flex-1">
-                    {/* {userData?.role !== "user" && <> */}
+                    {userData?.role !== "user" && <>
                         <div className="flex flex-col gap-1">
                             <label className="text-sm text-left font-medium text-gray-700">Image Link</label>
                             <input
@@ -379,7 +379,7 @@ export const EditMenuBox = ({ id, img, name, desc, cn, price, promotion, stocks,
                                 <p className="text-red-500 mt-1 text-sm">{promotionPriceError}</p>
                             )}
                         </div>
-                    {/* </>} */}
+                    </>}
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-left font-medium text-gray-700">Food Stocks</label>

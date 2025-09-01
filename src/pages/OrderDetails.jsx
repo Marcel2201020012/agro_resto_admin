@@ -70,6 +70,7 @@ export const OrderDetails = () => {
         setLoading(true);
         try {
             const orderRef = doc(db, "transaction_id", id);
+            const { prevValue, ...rest } = result;
             if (statusValue === "") {
                 // await updateDoc(orderRef, {
                 //     paymentUrl: "Pay With Cash"
@@ -79,6 +80,9 @@ export const OrderDetails = () => {
             } else {
                 await updateDoc(orderRef, {
                     status: statusValue,
+                    statusChangeBy: userData?.username,
+                    statusCahangeAt: serverTimestamp(),
+                    prevValue: JSON.stringify(rest, null, 2)
                     // paymentUrl: ""
                 });
             }
@@ -104,7 +108,6 @@ export const OrderDetails = () => {
         await Promise.all(batchUpdates);
         console.log("🎉 All stock updates completed!");
     };
-
 
     const updateMenuSolds = async (orderDetails) => {
         const orderDetailsArray = Object.values(orderDetails || {});
