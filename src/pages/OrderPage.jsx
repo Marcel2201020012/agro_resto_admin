@@ -21,8 +21,10 @@ export const OrderPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
 
-    const today = new Date(); // utc time
+    // const today = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
+    const today = new Date();
     const yyyy = today.getFullYear();
+    // const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     const dd = String(today.getDate()).padStart(2, "0");
     const localDate = `${yyyy}-${mm}-${dd}`; //convert to local time UTC + 7

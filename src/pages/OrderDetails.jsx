@@ -1,4 +1,4 @@
-import { doc, collection, updateDoc, onSnapshot, increment, serverTimestamp } from "firebase/firestore";
+import { doc, collection, updateDoc, onSnapshot, increment, serverTimestamp, snapshotEqual } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db } from "../../firebase/firebaseConfig";
@@ -6,6 +6,7 @@ import { useReactToPrint } from "react-to-print";
 import { Reprint } from "../components/Reprint";
 
 import { useAuth } from "../../hooks/useAuth";
+import { Trash2 } from "lucide-react";
 
 export const OrderDetails = () => {
     const navigate = useNavigate();
@@ -24,6 +25,8 @@ export const OrderDetails = () => {
     const [isEdit, setIsEdit] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [editItems, setEditItems] = useState([]);
+
+    const [menu, setMenu] = useState([]);
 
     const [isComplimentary, setIsComplimentary] = useState(null);
     const [isLoading, setIsLoading] = useState(false)
@@ -126,6 +129,19 @@ export const OrderDetails = () => {
     };
 
     useEffect(() => {
+        const unsub = onSnapshot(collection(db, "menu_makanan"), (snapshot) => {
+            const fetchMenu = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            setMenu(fetchMenu);
+        });
+
+        return () => unsub();
+    }, []);
+
+    useEffect(() => {
         const unsub = onSnapshot(collection(db, "transaction_id"), (snapshot) => {
             const orderData = snapshot.docs.map((doc) => ({
                 id: doc.id,
@@ -214,7 +230,6 @@ export const OrderDetails = () => {
         }
     };
 
-
     const handleEdit = () => {
         setShowEdit(false);
         if (!result?.orderDetails) return;
@@ -223,15 +238,30 @@ export const OrderDetails = () => {
         setIsEdit(true);
     };
 
+    const handleAdd = () => {
+        const newItem = {
+            name: "",
+            jumlah: 0,
+            price: 0,
+            promotion: 0,
+            discount: 0,
+        };
+        setEditItems([...editItems, newItem]);
+    }
+
     const handleChange = (index, field, value) => {
         const updated = [...editItems];
         let newValue = value;
 
         // Validation rules
         if (field === "jumlah") {
-            // must be an integer >= 0
-            newValue = parseInt(value, 10);
-            if (isNaN(newValue) || newValue < 0) newValue = 0;
+            // allow empty string while typing
+            if (value === "") {
+                newValue = "";
+            } else {
+                newValue = parseInt(value, 10);
+                if (isNaN(newValue) || newValue < 1) newValue = 1;
+            }
         }
 
         if (field === "price" || field === "promotion" || field === "discount") {
@@ -250,6 +280,12 @@ export const OrderDetails = () => {
         }
 
         updated[index] = { ...updated[index], [field]: newValue };
+        setEditItems(updated);
+    };
+
+    const handleDeleteMenu = (index) => {
+        const updated = [...editItems];
+        updated.splice(index, 1); // remove one item at this index
         setEditItems(updated);
     };
 
@@ -634,33 +670,64 @@ export const OrderDetails = () => {
                         </h2>
 
                         {/* Table Headings */}
-                        <div className="grid grid-cols-3 bg-gray-100 rounded-lg px-4 py-2 font-medium text-gray-700">
+                        {userData?.role !== "user" ? (<div className="grid grid-cols-4 bg-gray-100 rounded-lg px-4 py-2 font-medium text-gray-700">
                             <span>Food Name</span>
                             <span className="text-center">Quantity</span>
                             <span className="text-right">Price / Item</span>
-                        </div>
+                            <span className="text-center">Delete</span>
+                        </div>) : (<div className="grid grid-cols-3 bg-gray-100 rounded-lg px-4 py-2 font-medium text-gray-700">
+                            <span>Food Name</span>
+                            <span className="text-center">Quantity</span>
+                            <span className="text-right">Price / Item</span>
+                        </div>)}
 
                         {/* Scrollable rows */}
                         <div className="divide-y divide-gray-200 overflow-y-auto max-h-80">
                             {editItems.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="grid grid-cols-3 items-center px-4 py-2 hover:bg-gray-50 transition"
+                                    className={`grid items-center px-4 py-2 hover:bg-gray-50 transition ${userData?.role !== "user" ? ("grid-cols-4") : ("grid-cols-3")}`}
                                 >
                                     {/* Food Name */}
-                                    <input
-                                        type="text"
+                                    <select
                                         value={item.name}
-                                        className="border border-gray-300 rounded-lg px-3 py-1.5 bg-gray-100 text-gray-700"
-                                        readOnly
-                                    />
+                                        onChange={(e) => {
+                                            const selectedMenu = menu.find(m => m.name === e.target.value);
+                                            if (selectedMenu) {
+                                                const updated = [...editItems];
+                                                updated[index] = {
+                                                    ...updated[index],
+                                                    name: selectedMenu.name,
+                                                    jumlah: 1,
+                                                    price: selectedMenu.price || 0,
+                                                    promotion: selectedMenu.promotion || 0,
+                                                    discount: selectedMenu.discount || 0,
+                                                };
+                                                setEditItems(updated);
+                                            }
+                                        }}
+                                        className="border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700"
+                                    >
+                                        <option value="">-- Select Menu --</option>
+                                        {menu.map(menu => (
+                                            <option key={menu.id} value={menu.name}>
+                                                {menu.name}
+                                            </option>
+                                        ))}
+                                    </select>
 
                                     {/* Quantity */}
                                     <input
                                         type="text"
-                                        min="0"
+                                        min="1"
                                         value={item.jumlah}
                                         onChange={(e) => handleChange(index, "jumlah", e.target.value)}
+                                        onBlur={(e) => {
+                                            // if left empty → reset to 1
+                                            if (e.target.value === "" || parseInt(e.target.value, 10) < 1) {
+                                                handleChange(index, "jumlah", 1);
+                                            }
+                                        }}
                                         className="border border-gray-300 rounded-lg px-3 py-1.5 w-20 mx-auto text-center"
                                         readOnly={isComplimentary}
                                     />
@@ -679,46 +746,66 @@ export const OrderDetails = () => {
                                                 )
                                             }
                                             className="border border-gray-300 rounded-lg px-3 py-1.5 w-28 text-right"
-                                            readOnly={isComplimentary}
+                                            readOnly={isComplimentary || userData?.role === "user"} 
                                         />
                                     </div>
+
+                                    {userData?.role !== "user" &&
+                                        <div className="flex justify-center">
+                                            <button
+                                                onClick={() => handleDeleteMenu(index)}
+                                                className="p-1 rounded-lg text-red-500 hover:bg-red-100 transition"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    }
                                 </div>
                             ))}
                         </div>
 
                         {/* Action Buttons */}
-                        {isLoading ? (<span>Loading...</span>) : (<div className="mt-6 flex justify-end gap-3">
-                            <button
-                                onClick={() => setIsEdit(false)}
-                                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
-                            >
-                                Cancel
-                            </button>
-
-                            {isComplimentary ? (
+                        {isLoading ? (<span>Loading...</span>) : (
+                            <div className="mt-6 flex justify-between">
                                 <button
-                                    onClick={() => handleComplimentary(false)}
-                                    className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
+                                    onClick={() => handleAdd()}
+                                    className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
                                 >
-                                    Cancel Complimentary
+                                    Add
                                 </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleComplimentary(true)}
-                                    className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
-                                >
-                                    Set Complimentary
-                                </button>
-                            )}
 
-                            <button
-                                onClick={handleConfirmEdit}
-                                className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
-                            >
-                                Confirm
-                            </button>
-                        </div>)}
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setIsEdit(false)}
+                                        className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+                                    >
+                                        Cancel
+                                    </button>
 
+                                    {isComplimentary ? (
+                                        <button
+                                            onClick={() => handleComplimentary(false)}
+                                            className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
+                                        >
+                                            Cancel Complimentary
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleComplimentary(true)}
+                                            className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
+                                        >
+                                            Set Complimentary
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={handleConfirmEdit}
+                                        className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+                                    >
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>)}
                     </div>
                 </div>
             )}

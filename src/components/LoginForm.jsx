@@ -89,7 +89,7 @@ export const LoginForm = () => {
         <div className="relative min-h-screen flex flex-col items-center justify-center gap-6 px-4">
             <div className="font-bold text-white text-center text-2xl sm:text-3xl">
                 <div className="relative mb-6 w-full max-w-md bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg p-3 text-sm text-center shadow-sm">
-                    Attention: Currently some features, such as "Cancel Order" and most of "Edit Menu", are only available for Admin or above.
+                    Attention: Admins or above can now edit order details, while Users can add orders and adjust quantities for that order.
                 </div>
             {/* Header */}
                 <span>Agro Hotel Restaurant</span>
