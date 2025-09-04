@@ -39,7 +39,7 @@ export const ToolsPage = () => {
     }, []);
 
     useEffect(() => {
-        const checkTime = () => {
+        const checkTime = async () => {
             if (!shiftType) return;
 
             const now = new Date();
@@ -49,6 +49,8 @@ export const ToolsPage = () => {
             // Shift thresholds in minutes
             const morningThreshold = 11 * 60 + 35; // 11:35
             const nightThreshold = 20 * 60 + 35;   // 20:35
+
+            let newShift = shiftType;
 
             // 1. Basic allow rules
             if (shiftType === "morning" && currentMinutes >= morningThreshold) {
@@ -83,6 +85,24 @@ export const ToolsPage = () => {
                     if (sameDay && lastClosedMinutes >= morningThreshold && currentMinutes < nightThreshold) {
                         allowed = false;
                     }
+                }
+            }
+
+            // 3. Missed shift detection
+            if (shiftType === "morning" && currentMinutes >= nightThreshold) {
+                newShift = "night"; // morning missed, auto switch
+            } else if (shiftType === "night" && currentMinutes < morningThreshold) {
+                newShift = "morning"; // next day morning
+            }
+
+            // Update shiftType if needed
+            if (newShift !== shiftType) {
+                setShiftType(newShift);
+                try {
+                    await updateDoc(shiftDocRef, { type: newShift });
+                    console.log("Shift updated due to missed shift:", newShift);
+                } catch (err) {
+                    console.error("Failed to update shift:", err);
                 }
             }
 
