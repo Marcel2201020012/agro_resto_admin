@@ -672,23 +672,25 @@ export const OrderDetails = () => {
                             Edit Order
                         </h2>
 
-                        {userData?.role !== "user" ? (<div className="flex rounded-lg font-medium">
-                            <span className="text-center bg-gray-100 px-4 py-2 rounded-md">Payment</span>
-                        </div>) : (<div></div>)}
-
                         {/* payment field */}
-                        <div className="text-left mt-2 mb-2">
-                            <select
-                                value={newPayment}
-                                onChange={(e) => setNewPayment(e.target.value)}
-                                className="border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700"
-                            >
-                                <option value="Cash">Cash</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                                <option value="Credit Card">Credit Card</option>
-                                <option value="Debit Card">Debit Card</option>
-                            </select>
-                        </div>
+                        {userData?.role !== "user" ? (
+                            <>
+                                <div className="flex rounded-lg font-medium">
+                                    <span className="text-center bg-gray-100 px-4 py-2 rounded-md">Payment</span>
+                                </div>
+                                <div className="text-left mt-2 mb-2">
+                                    <select
+                                        value={newPayment}
+                                        onChange={(e) => setNewPayment(e.target.value)}
+                                        className="border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700"
+                                    >
+                                        <option value="Cash">Cash</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="Debit Card">Debit Card</option>
+                                    </select>
+                                </div>
+                            </>) : (<></>)}
 
                         {/* Table Headings */}
                         {userData?.role !== "user" ? (<div className="grid grid-cols-4 bg-gray-100 rounded-lg px-4 py-2 font-medium text-gray-700">
@@ -797,7 +799,7 @@ export const OrderDetails = () => {
 
                                 <div className="flex justify-end gap-3">
                                     <button
-                                        onClick={() => {setIsEdit(false); setNewPayment(result.payment)}}
+                                        onClick={() => { setIsEdit(false); setNewPayment(result.payment) }}
                                         className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
                                     >
                                         Cancel
